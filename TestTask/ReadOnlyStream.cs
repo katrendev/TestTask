@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
-
+        private bool isEof;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -16,18 +17,29 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open);
         }
-                
+
+        public void CloseInputStream()
+        {
+            _localStream.Close();
+        }
+
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                return isEof;
+            }
+            private set
+            {
+                isEof = value;
+            }
         }
 
         /// <summary>
@@ -38,8 +50,19 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream.Position == _localStream.Length - 1)
+            {
+                IsEof = true;
+            }
+            return (char)_localStream.ReadByte();
+        }
+
+        public void ResetPosBack()
+        {
+            if (_localStream.Position != 0)
+            {
+                _localStream.Position--;
+            }
         }
 
         /// <summary>
@@ -52,7 +75,6 @@ namespace TestTask
                 IsEof = true;
                 return;
             }
-
             _localStream.Position = 0;
             IsEof = false;
         }

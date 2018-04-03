@@ -10,6 +10,8 @@
         char ReadNextChar();
 
         void ResetPositionToStart();
+        void ResetPosBack();
+        void CloseInputStream();
 
         bool IsEof { get; }
     }
