@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
+        bool isDisposed = false;
+        BinaryReader binaryReader;
         private Stream _localStream;
 
         /// <summary>
@@ -13,21 +16,63 @@ namespace TestTask
         /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        /// <param name="encoding">Кодировка файла</param>
+        public ReadOnlyStream(string fileFullPath, Encoding encoding)
         {
-            IsEof = true;
+            if (string.IsNullOrWhiteSpace(fileFullPath))
+            {
+                throw new ArgumentNullException(nameof(fileFullPath));
+            }
+            this.Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+
+            if (!File.Exists(fileFullPath))
+            {
+                throw new FileNotFoundException("Не найден файл");
+            }
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            this.binaryReader = new BinaryReader(_localStream, encoding);
         }
-                
+        /// <summary>
+        /// Конструктор класса. Для чтения файла в кодировке UTF8
+        /// Т.к. происходит прямая работа с файлом, необходимо 
+        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+        /// </summary>
+        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
+        public ReadOnlyStream(string fileFullPath) : this(fileFullPath, Encoding.UTF8) { }
+
+        public Encoding Encoding { get; }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
+        public bool IsEof => _localStream.Length == _localStream.Position;
+
+        public virtual void Close()
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Dispose()
+        {
+            this.Close();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                this.binaryReader.Dispose();
+            }
+
+            this.isDisposed = true;
         }
 
         /// <summary>
@@ -39,7 +84,7 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            return this.binaryReader.ReadChar();
         }
 
         /// <summary>
@@ -47,14 +92,7 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
-
             _localStream.Position = 0;
-            IsEof = false;
         }
     }
 }
