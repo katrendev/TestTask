@@ -5,7 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _reader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,19 +15,33 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            if (File.Exists(fileFullPath))
+                _reader = new StreamReader(fileFullPath, System.Text.Encoding.Default);
+            else
+                throw new FileNotFoundException("File not Found!", fileFullPath);
         }
-                
+
+        ~ReadOnlyStream()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_reader != null)
+            {
+                _reader.Close();
+                _reader = null;
+            }
+        }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get { return _reader.EndOfStream; } // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
         }
 
         /// <summary>
@@ -39,7 +53,21 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (!_reader.EndOfStream)
+                try
+                {
+                    return (char)_reader.Read();
+                }
+                catch (Exception ex)
+                {
+                    Dispose();
+                    throw ex;
+                }
+            else
+            {
+                Dispose();
+                throw new Exception("End of File is reached!");
+            }
         }
 
         /// <summary>
@@ -47,14 +75,9 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            if (_reader == null) return;
 
-            _localStream.Position = 0;
-            IsEof = false;
+            _reader.BaseStream.Position = 0;
         }
     }
 }
