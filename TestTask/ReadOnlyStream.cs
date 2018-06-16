@@ -1,60 +1,86 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader  _streamReader;
 
         /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+        ///     Конструктор класса.
         /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        public ReadOnlyStream(Stream stream)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            if (stream == null)
+                throw new ArgumentNullException(nameof (stream));
+            if (!stream.CanRead)
+                throw new ArgumentException("Argument Stream Not Readable");
+            Init(stream);
         }
-                
-        /// <summary>
-        /// Флаг окончания файла.
-        /// </summary>
-        public bool IsEof
+        
+        private void Init(Stream stream)
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            _streamReader = new StreamReader(stream);
+            IsEof = false;
         }
 
         /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
+        ///     Флаг окончания файла.
+        /// </summary>
+        public bool IsEof { get; private set; }
+
+        /// <summary>
+        ///     Ф-ция чтения следующего символа из потока.
+        ///     Если произведена попытка прочитать символ после достижения конца файла, метод
+        ///     должен бросать соответствующее исключение
         /// </summary>
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+            {
+                throw new EndOfStreamException();
+            }
+            
+            var nextChar = (char) _streamReader.Read();
+
+            if (_streamReader.EndOfStream)
+            {
+                IsEof = true;
+            }
+
+            return nextChar;
         }
 
         /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
+        ///     Сбрасывает текущую позицию потока на начало.
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
+            if (_streamReader == null)
             {
-                IsEof = true;
                 return;
             }
-
-            _localStream.Position = 0;
+            
+            _streamReader.DiscardBufferedData();
+            _streamReader.BaseStream.Seek(0, SeekOrigin.Begin); 
+            
             IsEof = false;
+        }
+        
+        /// <summary>
+        ///     Закрытие читающего потока
+        /// </summary>
+        public void Close()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            _streamReader?.Dispose();
         }
     }
 }
