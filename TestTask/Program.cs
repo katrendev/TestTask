@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace TestTask
 {
@@ -16,47 +19,68 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            if (args.Length < 2)
+            {
+                ShowMessage("Запуск программы: TestTask.exe <file1> <file2>");
+                return;
+            }
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            for (int i = 0; i <= 1; i++)
+            {
+                if (!System.IO.File.Exists(args[i]))
+                {
+                    ShowMessage("Файл " + args[i] + " не найден.");
+                    return;
+                }
+            }
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            IList<LetterStats> singleLetterStats = FillSingleLetterStats(args[0]);
+            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(args[1]);
+
+            RemoveCharStatsByType(ref singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(ref doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
+            ShowMessage("Вывод статистики закончен");
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
 
-        /// <summary>
-        /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
-        /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        /// <returns>Поток для последующего чтения.</returns>
-        private static IReadOnlyStream GetInputStream(string fileFullPath)
-        {
-            return new ReadOnlyStream(fileFullPath);
-        }
 
         /// <summary>
         /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения каждой буквы.
         /// Статистика РЕГИСТРОЗАВИСИМАЯ!
         /// </summary>
-        /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
+        /// <param name="fileName">Полный путь до файла для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
+        private static IList<LetterStats> FillSingleLetterStats(string fileName)
         {
-            stream.ResetPositionToStart();
-            while (!stream.IsEof)
+            char[] result = ReadFile(fileName);
+
+            IList<LetterStats> statsList = new List<LetterStats>();
+            foreach (char c in result)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (char.IsLetter(c))
+                {
+                    LetterStats stats = new LetterStats();
+                    if (statsList.Where(s => s.Letter.Equals(c.ToString(), StringComparison.Ordinal)).Any())
+                    {
+                        LetterStats stats2 = statsList.Where(s => s.Letter.Equals(c.ToString(), StringComparison.Ordinal)).First();
+                        stats = stats2;
+                        statsList.Remove(stats2);
+                    }
+                    else
+                    {
+                        stats.Letter = c.ToString();
+                    }
+                    IncStatistic(ref stats);
+                    // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                    statsList.Add(stats);
+                }
             }
 
-            //return ???;
+            return statsList;
 
             throw new NotImplementedException();
         }
@@ -66,18 +90,38 @@ namespace TestTask
         /// В статистику должны попадать только пары из одинаковых букв, например АА, СС, УУ, ЕЕ и т.д.
         /// Статистика - НЕ регистрозависимая!
         /// </summary>
-        /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
+        /// <param name="fileName">Полный путь до файла для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static IList<LetterStats> FillDoubleLetterStats(string fileName)
         {
-            stream.ResetPositionToStart();
-            while (!stream.IsEof)
+            char[] result = ReadFile(fileName);
+
+            IList<LetterStats> statsList = new List<LetterStats>();
+            for (int i = 0; i < result.Length - 1; i++)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char c1 = result[i];
+                char c2 = result[i + 1];
+                if (char.IsLetter(c1) && char.IsLetter(c2) && c1.ToString().ToUpper() == c2.ToString().ToUpper())
+                {
+                    LetterStats stats = new LetterStats();
+                    string c = c1.ToString() + c2.ToString();
+                    if (statsList.Where(s => s.Letter.Equals(c, StringComparison.OrdinalIgnoreCase)).Any())
+                    {
+                        LetterStats stats2 = statsList.Where(s => s.Letter.Equals(c, StringComparison.OrdinalIgnoreCase)).First();
+                        stats = stats2;
+                        statsList.Remove(stats2);
+                    }
+                    else
+                    {
+                        stats.Letter = c;
+                    }
+                    IncStatistic(ref stats);
+                    // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                    statsList.Add(stats);
+                }
             }
 
-            //return ???;
+            return statsList;
 
             throw new NotImplementedException();
         }
@@ -89,17 +133,31 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(ref IList<LetterStats> letters, CharType charType)
         {
+            const string consonants= "БВГДЖЗЙКЛМНПРСТФХЦЧШЩЪЬ"; // уточнить надо ли ЙЪЬ
+            const string vowel = "АЕЁИОУЫЭЮЯ";
+            string strtodel = "";
+            IList<LetterStats> lettersResult = new List<LetterStats>();
+
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
+                    strtodel = consonants;
                     break;
                 case CharType.Vowel:
+                    strtodel = vowel;
                     break;
             }
-            
+
+            foreach(LetterStats let in letters)
+            {
+                if (strtodel.IndexOf(let.Letter.Substring(0, 1).ToUpper()) < 0)
+                    lettersResult.Add(let);
+            }
+
+            letters = lettersResult;
         }
 
         /// <summary>
@@ -109,9 +167,20 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        private static void PrintStatistic(IList<LetterStats> letters)
         {
+            int total = 0;
+            foreach (LetterStats let in letters.OrderBy(c => c.Letter.ToUpper()))
+            {
+                Console.WriteLine("{0} : {1}", let.Letter, let.Count);
+                total += let.Count;
+            }
+            Console.WriteLine("---------");
+            Console.WriteLine("ИТОГО: {0}\n\n", total);
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
+
+            return;
+
             throw new NotImplementedException();
         }
 
@@ -119,11 +188,36 @@ namespace TestTask
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        private static void IncStatistic(ref LetterStats letterStats)
         {
             letterStats.Count++;
         }
 
+        /// <summary>
+        /// Метод считывает входной файл.
+        /// </summary>
+        /// <param name="fileName">Полный путь до файла для считывания символов</param>
+        private static char[] ReadFile(string fileName)
+        {
+            char[] result;
+            using (StreamReader reader = new StreamReader(fileName, Encoding.Default))
+            {
+                result = new char[reader.BaseStream.Length];
+                reader.Read(result, 0, (int)reader.BaseStream.Length);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Метод выводит сообщение на консоль и делает паузу.
+        /// </summary>
+        /// <param name="message">Сообщение</param>
+        private static void ShowMessage(string message)
+        {
+            Console.WriteLine(message);
+            Console.WriteLine("\n\nНажмите любую клавишу для завершения программы...");
+            Console.ReadKey();
+        }
 
     }
 }
