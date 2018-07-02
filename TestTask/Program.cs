@@ -116,15 +116,17 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
+            string Consonants = "bcdfghjklmnpqrstvwxyz";
+            string Vowel = "aeiou";
             switch (charType)
             {
                 case CharType.Consonants:
+                    ((List<LetterStats>)letters).RemoveAll(x => Consonants.Contains(x.Letter[0].ToString()));
                     break;
                 case CharType.Vowel:
+                    ((List<LetterStats>)letters).RemoveAll(x => Vowel.Contains(x.Letter.ToLower()));
                     break;
             }
-            
         }
 
         /// <summary>
