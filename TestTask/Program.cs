@@ -49,16 +49,28 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            List<LetterStats> rez = new List<LetterStats>();
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                var ls = new LetterStats()
+                {
+                    Letter = c.ToString(),
+                    Count = 1
+                };
+                var item = rez.Find(x => x.Letter == ls.Letter);
+                if (item == null)
+                {
+                    rez.Add(ls);
+
+                }
+                else
+                {
+                    IncStatistic(item);
+                }
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return rez;
         }
 
         /// <summary>
@@ -70,16 +82,29 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            List<LetterStats> rez = new List<LetterStats>();
             stream.ResetPositionToStart();
+            char old = '\0';
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+
+                if (c.ToString().ToLower() == old.ToString().ToLower())
+                {
+                    var ls = new LetterStats()
+                    {
+                        Count = 1,
+                        Letter = old.ToString().ToLower() + c.ToString().ToLower(),
+                    };
+                    var item = rez.Find(x => x.Letter == ls.Letter);
+                    if (item == null)
+                        rez.Add(ls);
+                    else
+                        IncStatistic(item);
+                }
+                old = c;
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return rez;
         }
 
         /// <summary>
