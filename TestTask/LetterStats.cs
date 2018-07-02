@@ -3,7 +3,7 @@
     /// <summary>
     /// Статистика вхождения буквы/пары букв
     /// </summary>
-    public struct LetterStats
+    public class LetterStats
     {
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
@@ -14,5 +14,13 @@
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
+
+        /// <summary>
+        /// Переобразует экземпляр объекта в текстовую строку
+        /// </summary>
+        public override string ToString()
+        {
+            return "{" + Letter + "} : {" + Count + "}";
+        }
     }
 }
