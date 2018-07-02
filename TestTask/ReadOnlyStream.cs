@@ -45,8 +45,14 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            try
+            {
+                return Convert.ToChar(_localStream.ReadByte());
+            }
+            catch
+            {
+                throw new Exception("Произведена попытка прочитать символ после достижения конца файла");
+            }
         }
 
         /// <summary>
