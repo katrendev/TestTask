@@ -24,8 +24,17 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                if (_localStream.Length == _localStream.Position)
+                {
+                    Dispose();
+                    return true;
+                }
+                else
+                    return false;
+            }
+            private set { }
         }
 
         /// <summary>
