@@ -16,9 +16,7 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open);
         }
                 
         /// <summary>
