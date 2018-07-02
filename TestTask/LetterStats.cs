@@ -14,5 +14,13 @@
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
+
+        /// <summary>
+        /// Переобразует экземпляр объекта в текстовую строку
+        /// </summary>
+        public override string ToString()
+        {
+            return "{" + Letter + "} : {" + Count + "}";
+        }
     }
 }

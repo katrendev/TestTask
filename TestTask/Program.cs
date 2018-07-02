@@ -18,7 +18,7 @@ namespace TestTask
         {
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
-
+            
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
             IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
@@ -28,7 +28,7 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadLine();
         }
 
         /// <summary>
