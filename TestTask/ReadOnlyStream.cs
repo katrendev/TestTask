@@ -56,5 +56,14 @@ namespace TestTask
             _localStream.Position = 0;
             IsEof = false;
         }
+
+        /// <summary>
+        /// Функция закрытия и освобождения ресурсов
+        /// </summary>
+        public void Dispose()
+        {
+            _localStream.Close();
+            _localStream.Dispose();
+        }
     }
 }
