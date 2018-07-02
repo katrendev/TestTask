@@ -138,8 +138,17 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            ((List<LetterStats>)letters).Sort(delegate(LetterStats ls1, LetterStats ls2)
+            {
+                return ls1.Letter.CompareTo(ls2.Letter);
+            });
+            int count = 0;
+            foreach (var item in letters)
+            {
+                count += item.Count;
+                Console.WriteLine(item.ToString());
+            }
+            Console.WriteLine("ИТОГО: " + count + "\n");
         }
 
         /// <summary>
