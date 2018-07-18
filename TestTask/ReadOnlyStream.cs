@@ -17,25 +17,22 @@ namespace TestTask
         {
             try
             {
-                using (StreamReader sr = new StreamReader(fileFullPath))
-                {
-                    Console.WriteLine("Начинаем считывать файл");
-                    Console.WriteLine(sr.CurrentEncoding);
-                    Console.WriteLine(sr.ReadToEnd());
-                    Console.WriteLine(sr.CurrentEncoding);
-                    Console.WriteLine("Файл считан");
-                    _localStream = sr;
-                    IsEof = true;
-                }
+                Console.WriteLine("Начинаем привязку файла");
+                _localStream = new StreamReader(fileFullPath);
+                Console.WriteLine("Файл привязан");
+//                    IsEof = true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Ошибка: " + ex.Message);
             }
             Console.WriteLine(_localStream);
+
+            IsEof = false;
+
             Console.ReadLine();
             // TODO : Заменить на создание реального стрима для чтения файла!
-            //_localStream. = null;
+            //_localStream = null;
         }
                 
         /// <summary>
@@ -56,7 +53,16 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            char c = (char)_localStream.Read();
+
+            if (_localStream.Peek() < 0)
+            {
+                IsEof = true;
+            }
+
+            return c;
+
+            //throw new NotImplementedException();
         }
 
         /// <summary>
