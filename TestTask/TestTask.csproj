@@ -42,7 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlphabetSingleLetter.cs" />
+    <Compile Include="AlphabetLetter.cs" />
     <Compile Include="CharType.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
@@ -51,7 +51,6 @@
     <Compile Include="ReadOnlyStream.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="1.txt" />
     <Content Include="ToDo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
