@@ -5,6 +5,8 @@ namespace TestTask
 {
     public class Program
     {
+        static string VowelLetter = "аеёиоуыэюя";
+
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
@@ -30,10 +32,10 @@ namespace TestTask
             FillDoubleLetterStats(inputStream2, alphabetDoubleLetter);
             PrintStatisticDouble(alphabetDoubleLetter);
 
-            //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(alphabetSingleLetter, CharType.Vowel);
             //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
-            //PrintStatistic(singleLetterStats);
+            PrintStatisticSingle(alphabetSingleLetter);
             //PrintStatistic(doubleLetterStats);
 
             inputStream1.Close();
@@ -122,14 +124,26 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        //private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(AlphabetLetter letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
+                    
                     break;
                 case CharType.Vowel:
+                    for (int i = 0; i < letters.alphabet.Length; i++)
+                    {
+                        for (int j = 0; j < VowelLetter.Length; j++)
+                        {
+                            if (Char.ToLower(letters.alphabet[i]) == VowelLetter[j])
+                            {
+                                letters.letterCounter[i] = 0;
+                            }
+                        }
+                    }
                     break;
             }
         }
