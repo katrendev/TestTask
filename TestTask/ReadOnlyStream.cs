@@ -17,20 +17,16 @@ namespace TestTask
         {
             try
             {
-                Console.WriteLine("Начинаем привязку файла");
                 _localStream = new StreamReader(fileFullPath);
-                Console.WriteLine("Файл привязан");
 //                    IsEof = true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Ошибка: " + ex.Message);
             }
-            Console.WriteLine(_localStream);
 
             IsEof = false;
 
-            Console.ReadLine();
             // TODO : Заменить на создание реального стрима для чтения файла!
             //_localStream = null;
         }
@@ -78,6 +74,14 @@ namespace TestTask
 
             //_localStream.Position = 0;
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Закрывает файл
+        /// </summary>
+        public void Close()
+        {
+            _localStream.Close();
         }
     }
 }

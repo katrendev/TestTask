@@ -24,8 +24,7 @@ namespace TestTask
             //IList<LetterStats> singleLetterStats = 
             FillSingleLetterStats(inputStream1, alphabetSingleLetter);
             PrintStatisticSingle(alphabetSingleLetter);
-            Console.Read();
-
+            
 
             //IList<LetterStats> doubleLetterStats = 
             FillDoubleLetterStats(inputStream2, alphabetDoubleLetter);
@@ -37,6 +36,8 @@ namespace TestTask
             //PrintStatistic(singleLetterStats);
             //PrintStatistic(doubleLetterStats);
 
+            inputStream1.Close();
+            inputStream2.Close();
 
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
             Console.Read();
@@ -76,9 +77,7 @@ namespace TestTask
                         break;
                     }
                 }
-
             }
-            Console.ReadLine();
         }
 
         /// <summary>
@@ -112,7 +111,6 @@ namespace TestTask
                 }
                 c1 = c2;
             }
-            Console.ReadLine();
         }
 
         
@@ -193,7 +191,6 @@ namespace TestTask
         {
             letterStats.Count++;
         }
-
 
     }
 }

@@ -13,5 +13,6 @@
 
         bool IsEof { get; }
 
+        void Close();
     }
 }
