@@ -6,6 +6,7 @@ namespace TestTask
     public class Program
     {
         static string VowelLetter = "аеёиоуыэюя";
+        static string ConsonantLetter = "бвгджзйклмнпрстфхцчшщъь";
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -31,12 +32,14 @@ namespace TestTask
             //IList<LetterStats> doubleLetterStats = 
             FillDoubleLetterStats(inputStream2, alphabetDoubleLetter);
             PrintStatisticDouble(alphabetDoubleLetter);
-
+            
+            Console.WriteLine("Убираем гласные.");
             RemoveCharStatsByType(alphabetSingleLetter, CharType.Vowel);
-            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
-
             PrintStatisticSingle(alphabetSingleLetter);
-            //PrintStatistic(doubleLetterStats);
+
+            Console.WriteLine("Убираем согласные.");
+            RemoveCharStatsByType(alphabetDoubleLetter, CharType.Consonants);
+            PrintStatisticDouble(alphabetDoubleLetter);
 
             inputStream1.Close();
             inputStream2.Close();
@@ -131,7 +134,16 @@ namespace TestTask
             switch (charType)
             {
                 case CharType.Consonants:
-                    
+                    for (int i = 0; i < letters.alphabet.Length; i++)
+                    {
+                        for (int j = 0; j < ConsonantLetter.Length; j++)
+                        {
+                            if (Char.ToLower(letters.alphabet[i]) == ConsonantLetter[j])
+                            {
+                                letters.letterCounter[i] = 0;
+                            }
+                        }
+                    }
                     break;
                 case CharType.Vowel:
                     for (int i = 0; i < letters.alphabet.Length; i++)
@@ -170,7 +182,7 @@ namespace TestTask
                     sum ++;
                 }
             }
-            Console.WriteLine("Общее кол-во найденных букв: {0}", sum);
+            Console.WriteLine("Общее кол-во найденных букв: {0}\n", sum);
         }
 
         /// <summary>
@@ -194,7 +206,7 @@ namespace TestTask
                     sum++;
                 }
             }
-            Console.WriteLine("Общее кол-во найденных пар букв: {0}", sum);
+            Console.WriteLine("Общее кол-во найденных пар букв: {0}\n", sum);
         }
 
         /// <summary>

@@ -49,7 +49,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOnlyStream.cs" />
-    <Compile Include="VowelLetter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ToDo.txt" />
