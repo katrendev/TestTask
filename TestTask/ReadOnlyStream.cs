@@ -3,9 +3,10 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
+    public class ReadOnlyStream : IReadOnlyStream, IDisposable
     {
         private Stream _localStream;
+        private TextReader _localReader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -18,7 +19,20 @@ namespace TestTask
             IsEof = true;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            // В конструкторе инициализируем файловый и текстовый поток.
+            if (String.IsNullOrEmpty(fileFullPath))
+                throw new ArgumentNullException("fileFullPath");
+            try
+            {
+                _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                _localReader = new StreamReader(_localStream);
+                IsEof = false;
+            }
+            catch
+            {
+                Dispose();
+                _localStream = null;
+            }
         }
                 
         /// <summary>
@@ -39,7 +53,30 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            // Реализуем чтение одного символа из текстового потока.
+            // После достижения коца файла закрываем потоки.
+            int iCh;
+            char ch;
+
+            try
+            {
+                iCh = _localReader.Read();
+                ch = (char)iCh;
+                if ((iCh = _localReader.Peek()) == -1)
+                {
+                    IsEof = true;
+                    Dispose();
+                }
+            }
+            catch
+            {
+                IsEof = true;
+                Dispose();
+                ch = Char.Parse("1");
+            }
+            return ch;
+
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -55,6 +92,21 @@ namespace TestTask
 
             _localStream.Position = 0;
             IsEof = false;
+        }
+
+        // Метод который гарантирует закрытие потоков.
+        public void Dispose()
+        {
+            if (_localReader != null)
+            {
+                _localReader.Close();
+                _localReader.Dispose();
+            }
+            if (_localStream != null)
+            {
+                _localStream.Close();
+                _localStream.Dispose();
+            }
         }
     }
 }
