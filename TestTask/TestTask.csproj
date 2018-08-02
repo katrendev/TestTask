@@ -42,9 +42,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharType.cs" />
+    <Compile Include="CharExtension.cs" />
+    <Compile Include="IAlphabetProvider.cs" />
+    <Compile Include="LetterStatsFiller.cs" />
+    <Compile Include="LetterType.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
+    <Compile Include="AlphabetProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOnlyStream.cs" />
