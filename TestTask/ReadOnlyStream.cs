@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -13,12 +14,21 @@ namespace TestTask
         /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        /// <param name="encoding">Кодировка (по умолчанию - автоопределение или UTF-8)</param>
+        public ReadOnlyStream(string fileFullPath,Encoding encoding=null)
         {
             IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            try
+            {
+                _localStream = (encoding != null) ? new StreamReader(fileFullPath, encoding)
+                    : new StreamReader(fileFullPath, true);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Ошибка открытия файла '{fileFullPath}'", e);
+            }
+            
+            // TODO : Заменить на создание реального стрима для чтения файла!            
         }
                 
         /// <summary>
@@ -30,6 +40,7 @@ namespace TestTask
             private set;
         }
 
+
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
         /// Если произведена попытка прочитать символ после достижения конца файла, метод 
@@ -39,7 +50,10 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            var c=_localStream.Read(); 
+            if (_localStream.Peek() == -1)
+                IsEof = true;            
+            return (char)c;            
         }
 
         /// <summary>
@@ -53,8 +67,32 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
+            _localStream.BaseStream.Seek(0, SeekOrigin.Begin);
             IsEof = false;
+        }
+   
+        private bool disposed = false;
+        // реализация интерфейса IDisposable.
+        public void Dispose()
+        {
+            CleanUp(true);
+            GC.SuppressFinalize(this); // подавляем финализацию
+        }
+
+        protected void CleanUp(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing) // освобождение управляемых ресурсов
+                    _localStream.Close();
+                disposed = true;
+            }
+        }
+
+        // Деструктор
+        ~ReadOnlyStream()
+        {
+            CleanUp(false);
         }
     }
 }
