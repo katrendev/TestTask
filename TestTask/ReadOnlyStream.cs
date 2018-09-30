@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private readonly StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -17,17 +18,16 @@ namespace TestTask
         {
             IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath, Encoding.Default);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get;
+            set;
         }
 
         /// <summary>
@@ -38,8 +38,22 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            //Проверка на попытку считать символ после закрытия потока
+            if (IsEof)
+            {
+                throw new ArgumentOutOfRangeException("Чтение файла завершено.");
+            }
+
+            var nextChar = (char)_localStream.Read();
+
+            //Проверка на окончание файла
+            if (nextChar == '\uffff')
+            {
+                IsEof = true;
+                _localStream.Close();
+            }
+
+            return nextChar;
         }
 
         /// <summary>
@@ -47,13 +61,9 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            _localStream.DiscardBufferedData();
+            _localStream.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
 
-            _localStream.Position = 0;
             IsEof = false;
         }
     }
