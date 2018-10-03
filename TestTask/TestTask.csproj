@@ -48,6 +48,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOnlyStream.cs" />
+    <Compile Include="DoubleLetterStatMaker.cs" />
+    <Compile Include="SingleLetterStatMaker.cs" />
+    <Compile Include="LetterStatMaker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
