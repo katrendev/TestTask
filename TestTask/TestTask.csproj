@@ -42,7 +42,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CharacterMachines\CharacterMachineCreator.cs" />
+    <Compile Include="CharacterMachines\DoubleCharacterMachine.cs" />
+    <Compile Include="CharacterMachines\SimpleCharacterMachine.cs" />
+    <Compile Include="CharExtensions.cs" />
     <Compile Include="CharType.cs" />
+    <Compile Include="CharacterMachines\ICharacterMachine.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
     <Compile Include="Program.cs" />

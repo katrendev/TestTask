@@ -3,7 +3,7 @@
     /// <summary>
     /// Статистика вхождения буквы/пары букв
     /// </summary>
-    public struct LetterStats
+    public class LetterStats
     {
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
@@ -14,5 +14,7 @@
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
+
+        public override string ToString() => $"{Letter} : {Count}";
     }
 }
