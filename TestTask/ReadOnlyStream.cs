@@ -5,7 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,18 +15,16 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            StreamReader sr = new StreamReader(fileFullPath);
+            _localStream = sr;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +36,19 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream == null || _localStream.EndOfStream)
+            {
+                throw new Exception("Error while trying to read a stream: the stream is null or stream has ended");
+            }
+
+            char nextChar = (char)_localStream.Read();           
+
+            if (_localStream.EndOfStream)
+            {
+                IsEof = true;
+            }
+
+            return nextChar;
         }
 
         /// <summary>
@@ -52,9 +61,19 @@ namespace TestTask
                 IsEof = true;
                 return;
             }
-
-            _localStream.Position = 0;
+            _localStream.BaseStream.Position = 0;
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Закрывает поток и высвобождает ресурсы.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_localStream != null)
+            {
+                _localStream.Dispose();
+            }         
         }
     }
 }
