@@ -6,7 +6,6 @@ namespace TestTask
 {
     public class Program
     {
-
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
@@ -17,22 +16,38 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            Console.WriteLine(args[0]);
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            if (args.Length != 2)
+            {
+                Console.WriteLine("Указаны неккоректные данные для поиска файлов!");
+                Console.WriteLine("Нажмите любую клавишу для завершения!");
+                Console.ReadKey();
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+                Environment.Exit(0);
+            }
 
-            inputStream1.Dispose();
-            //inputStream2.Dispose();
+            IList<LetterStats> singleLetterStats;
+            IList<LetterStats> doubleLetterStats;
+
+            //Освобождение ресурсов
+            using (IReadOnlyStream inputStream1 = GetInputStream(args[0]),
+            inputStream2 = GetInputStream(args[1]))
+            {
+                singleLetterStats = FillSingleLetterStats(inputStream1);
+                doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            }
 
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
-            //PrintStatistic(doubleLetterStats);
 
+            Console.WriteLine("Исходя из задания, учет пары букв не регистрозависим,");
+            Console.WriteLine("утверждаем, что АА=Аа=аА=аа, и выводим пары букв в верхнем регистре.");
+
+            PrintStatistic(doubleLetterStats);
+
+            Console.WriteLine();
+            Console.WriteLine("Нажмите любую клавишу для завершения!");
             Console.ReadKey();
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
@@ -64,6 +79,7 @@ namespace TestTask
             {
                 //Перебор по символам
                 char c = stream.ReadNextChar();
+
                 //Если входит в набор
                 if (Regex.IsMatch(c.ToString(), "[а-яА-Я]"))
                 {
@@ -82,13 +98,11 @@ namespace TestTask
                         }
                         count++;
                     }
-                    if (c!= default) singleLetters.Add(new LetterStats() { Letter = c.ToString(), Count = 1 });
+                    if (c != default) singleLetters.Add(new LetterStats() { Letter = c.ToString(), Count = 1 });
                 }
-
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
             }
             return singleLetters;
-
             //throw new NotImplementedException();
         }
 
@@ -101,16 +115,53 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            //Список букв
+            IList<LetterStats> doubleLetters = new List<LetterStats>();
+
             stream.ResetPositionToStart();
+
+            //Предыдущая буква
+            char cBack = stream.ReadNextChar();
+
             while (!stream.IsEof)
             {
+                //Перебор по символам
                 char c = stream.ReadNextChar();
+
+                //Буквы в верхнем регистре, предыдущая и текущая буквы
+                char upperLetterC = char.ToUpper(c);
+                char upperLetterCBack = char.ToUpper(cBack);
+
+                //Если входит в набор
+                if (Regex.IsMatch(cBack.ToString(), "[а-яА-Я]") && Regex.IsMatch(c.ToString(), "[а-яА-Я]"))
+                {
+                    if (upperLetterCBack == upperLetterC)
+                    {
+                        int count = 0;
+                        //Проходимся по списку, если имеется уже такая буква, то увеличиваем
+                        //Если нет, то добавляем в список букву с количеством 1 
+                        foreach (LetterStats item in doubleLetters)
+                        {
+                            if (char.ToUpper(item.Letter[0]) == upperLetterCBack)
+                            {
+                                LetterStats copyLetter = doubleLetters[count];
+                                IncStatistic(ref copyLetter);
+                                doubleLetters[count] = copyLetter;
+                                c = default;
+                                break;
+                            }
+                            count++;
+                        }
+                        if (c != default)
+                            doubleLetters.Add(new LetterStats()
+                            { Letter = upperLetterCBack + upperLetterC.ToString(), Count = 1 });
+                    }
+                }
+                cBack = c;
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return doubleLetters;
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -132,7 +183,6 @@ namespace TestTask
                     RemoveLettrs(letters, true);
                     break;
             }
-            
         }
 
         /// <summary>
@@ -175,10 +225,12 @@ namespace TestTask
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-
             int countLetters = 0;
 
-            foreach (LetterStats item in letters)
+            List<LetterStats> sortLetters = (List<LetterStats>)letters;
+            sortLetters.Sort(new SortLetters());
+
+            foreach (LetterStats item in sortLetters)
             {
                 countLetters += item.Count;
                 Console.WriteLine($"Буква - {item.Letter} : {item.Count}");

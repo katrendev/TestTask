@@ -8,8 +8,6 @@ namespace TestTask
     {
         private Stream _localStream;
 
-        private bool _isEof;
-
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -18,15 +16,19 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            try
+            {
+                _localStream = new FileInfo(fileFullPath).OpenRead();
+            }
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine($"Путь к файлу не найден! Текст ошибки: {e.Message}");
+                Console.WriteLine("Нажмите любую клавишу для завершения!");
+                Console.ReadKey();
 
-
-            _localStream = new FileInfo(fileFullPath).OpenRead();
-            //_localStream = File.OpenText(fileFullPath);
-
-
+                Environment.Exit(0);
+            }
             // TODO : Заменить на создание реального стрима для чтения файла!
-            //_localStream = null;
         }
 
         /// <summary>
@@ -34,9 +36,17 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                if (_localStream != null)
+                {
+                    return _localStream.Position == _localStream.Length;
+                }
+                return true;
+                // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            }
         }
+
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -46,19 +56,17 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            int b = _localStream.ReadByte();
-
-            //Если последний символ, IsEof присвоить true
-            if (_localStream.Position == _localStream.Length) IsEof = true;
-
             //Если конец файла, то сгенерировать специальное исключение
             try
             {
+                if (IsEof)
+                    throw new StreamIsDeadException("Попытка прочитать символ после достижения конца файла!!!");
+                int b = _localStream.ReadByte();
                 return b == -1 ?
-                    throw new StreamIsDeadException("Попытка прочитать сомвол после достижения конца файла!!!")
+                    throw new StreamIsDeadException("Попытка прочитать символ после достижения конца файла!!!")
                     : Encoding.Default.GetChars(new byte[] { (byte)b })[0];
             }
-            catch(StreamIsDeadException e)
+            catch (StreamIsDeadException e)
             {
                 Console.WriteLine(e.Message);
                 return default;
@@ -75,12 +83,10 @@ namespace TestTask
         {
             if (_localStream == null)
             {
-                IsEof = true;
                 return;
             }
 
             _localStream.Position = 0;
-            IsEof = false;
         }
 
         /// <summary>

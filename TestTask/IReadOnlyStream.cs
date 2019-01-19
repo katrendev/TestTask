@@ -14,5 +14,8 @@ namespace TestTask
         void ResetPositionToStart();
 
         bool IsEof { get; }
+
+        //Переопределение метода Dispose интерейса IDisposable
+        new void Dispose();
     }
 }

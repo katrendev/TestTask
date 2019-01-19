@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TestTask
 {
@@ -11,16 +7,16 @@ namespace TestTask
     /// </summary>
     class StreamIsDeadException : ApplicationException
     {
-        private string massageStream;
+        private string messageStream;
 
-        public StreamIsDeadException(string massageStream)
+        public StreamIsDeadException(string messageStream)
         {
-            this.massageStream = massageStream;
+            this.messageStream = messageStream;
         }
 
         /// <summary>
         /// Переопределение метода
         /// </summary>
-        public override string Message => $"Stream Error Massege : {massageStream}";
+        public override string Message => $"Stream Error Message : {messageStream}";
     }
 }
