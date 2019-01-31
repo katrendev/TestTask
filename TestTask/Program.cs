@@ -20,13 +20,13 @@ namespace TestTask
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
-            PrintStatistic(singleLetterStats);
-            PrintStatistic(doubleLetterStats);
+            //PrintStatistic(singleLetterStats);
+            //PrintStatistic(doubleLetterStats);
 
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
@@ -54,11 +54,13 @@ namespace TestTask
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                Console.Write(c);
             }
 
             //return ???;
+            return new List<LetterStats>();
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -99,7 +101,6 @@ namespace TestTask
                 case CharType.Vowel:
                     break;
             }
-            
         }
 
         /// <summary>
@@ -123,7 +124,5 @@ namespace TestTask
         {
             letterStats.Count++;
         }
-
-
     }
 }
