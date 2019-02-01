@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace TestTask
 {
@@ -22,13 +23,13 @@ namespace TestTask
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
             IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
-            //PrintStatistic(singleLetterStats);
-            //PrintStatistic(doubleLetterStats);
+            PrintStatistic(singleLetterStats);
+            PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -57,8 +58,7 @@ namespace TestTask
                 char cRurr = stream.ReadNextChar();
                 if (char.IsLetter(cRurr))
                 {
-                    LetterStats item = AddUpdateItem(list, char.ToString(cRurr));
-                    //Console.WriteLine("  Char: {0},  Count: {1}", cRurr, item.Count);
+                    AddUpdateItem(list, char.ToString(cRurr));
                 }
             }
 
@@ -70,8 +70,7 @@ namespace TestTask
         /// </summary>
         /// <param name="list">Список символов и статистика по ним</param>
         /// <param name="letter">Символ, статистику по которому требуется обновить</param>
-        /// <returns></returns>
-        private static LetterStats AddUpdateItem(List<LetterStats> list, string letter)
+        private static void AddUpdateItem(List<LetterStats> list, string letter)
         {
             int index = list.FindIndex(matchItem => matchItem.Letter == letter);
             LetterStats item = index != -1 ? list[index] : new LetterStats() { Letter = letter };
@@ -85,8 +84,6 @@ namespace TestTask
             {
                 list.Add(item);
             }
-
-            return item;
         }
 
         /// <summary>
@@ -114,9 +111,8 @@ namespace TestTask
                 if (cPrev == cCurr)
                 {
                     string letter = string.Concat(char.ToString(cPrev), char.ToString(cCurr));
-                    LetterStats item = AddUpdateItem(list, letter);
+                    AddUpdateItem(list, letter);
                     cPrev = char.MinValue;
-                    //Console.WriteLine("{0}, {1}", letter, item.Count);
                 }
                 else
                 {
@@ -136,14 +132,24 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
+            List<LetterStats> list = (List<LetterStats>)letters;
+            string strToFind = string.Empty;
+
             switch (charType)
             {
                 case CharType.Consonants:
+                    strToFind = "[BCDFGHJKLMNPQRSTVWXYZБВГДЖЗЙКЛМНПРСТФХЦЧШЩ]+";
                     break;
                 case CharType.Vowel:
+                    strToFind = "[AEIOUАОИЕЁЭЫУЮЯ]+";
                     break;
             }
+
+            list.RemoveAll(matchItem =>
+            {
+                Match m = Regex.Match(matchItem.Letter, strToFind, RegexOptions.IgnoreCase);
+                return m.Success;
+            });
         }
 
         /// <summary>
@@ -155,8 +161,15 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            List<LetterStats> list = (List<LetterStats>)letters;
+            list.Sort((LetterStats item1, LetterStats item2) => item1.Letter.CompareTo(item2.Letter));
+
+            Console.WriteLine("  Statistics\n--------------");
+            foreach (var item in list)
+            {
+                Console.WriteLine("  Letter: {0},  Count: {1}", item.Letter, item.Count);
+            }
+            Console.WriteLine(Environment.NewLine);
         }
 
         /// <summary>
