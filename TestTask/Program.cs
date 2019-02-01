@@ -29,6 +29,9 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
+            inputStream1.Close();
+            inputStream2.Close();
+
             Console.ReadKey();
         }
 

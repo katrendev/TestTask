@@ -26,6 +26,11 @@ namespace TestTask
             get => _localStream.EndOfStream;
         }
 
+        public void Close()
+        {
+            _localStream?.Close();
+        }
+
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
         /// Если произведена попытка прочитать символ после достижения конца файла, метод 
