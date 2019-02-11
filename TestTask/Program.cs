@@ -128,22 +128,11 @@ namespace TestTask
         private static void RemoveCharStatsByType(ref IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
-            {
-                case CharType.Consonants:
-                    var resultWithoutConsonants = from member in letters
-                                                  where member.Type != CharType.Consonants
-                                                  select member;
-                    letters = resultWithoutConsonants.ToArray();
-                    break;
+            var result = from member in letters
+                         where member.Type != charType
+                         select member;
 
-                case CharType.Vowel:
-                    var resultWithoutVowel = from member in letters
-                                             where member.Type != CharType.Vowel
-                                             select member;
-                    letters = resultWithoutVowel.ToList();
-                    break;
-            }
+            letters = result.ToList();
         }
 
         /// <summary>
