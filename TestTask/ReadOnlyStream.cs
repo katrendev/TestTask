@@ -6,6 +6,7 @@ namespace TestTask
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+        private StreamReader _streamReader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +16,14 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            //IsEof = true;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            if (!File.Exists(fileFullPath))
+                throw new FileNotFoundException("File not found at path: " + fileFullPath);
+
+            _localStream = File.OpenRead(fileFullPath);
+            _streamReader = new StreamReader(_localStream, System.Text.Encoding.Default);
         }
                 
         /// <summary>
@@ -26,8 +31,7 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get { return _streamReader.EndOfStream; } // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
         }
 
         /// <summary>
@@ -38,8 +42,11 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
+            if (IsEof)
+                throw new EndOfStreamException();
+
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            return (char)_streamReader.Read();
         }
 
         /// <summary>
@@ -49,12 +56,15 @@ namespace TestTask
         {
             if (_localStream == null)
             {
-                IsEof = true;
                 return;
             }
 
             _localStream.Position = 0;
-            IsEof = false;
+        }
+
+        void IDisposable.Dispose()
+        {
+            _streamReader.Dispose();
         }
     }
 }
