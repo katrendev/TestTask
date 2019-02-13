@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
-
+        //private Stream _localStream;
+        private StreamReader _localStream;
+        private int _currentCharacter = -1;
+        private bool _isEof = true;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,10 +17,7 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(File.Open(fileFullPath, FileMode.Open));
         }
                 
         /// <summary>
@@ -26,8 +25,8 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get { return _isEof; }
+            private set { _isEof = value; }
         }
 
         /// <summary>
@@ -39,7 +38,14 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            _currentCharacter = _localStream.Read();
+            _isEof = _localStream.EndOfStream;
+            if (_currentCharacter != -1)
+            {
+                return (char)_currentCharacter;
+            }
+
+            throw new EndOfStreamException();
         }
 
         /// <summary>
@@ -52,9 +58,16 @@ namespace TestTask
                 IsEof = true;
                 return;
             }
+            
+            //TODO: сбросить позиция на начало            
+            _localStream.BaseStream.Position = 0;
+            _localStream.BaseStream.Seek(0, SeekOrigin.Begin);
+            IsEof = _localStream.Peek() == -1;
+        }
 
-            _localStream.Position = 0;
-            IsEof = false;
+        public void Dispose()
+        {
+            _localStream.Dispose();
         }
     }
 }
