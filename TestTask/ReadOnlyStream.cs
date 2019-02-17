@@ -5,8 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
-
+        private StreamReader _localStream;
+        private bool disposed;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,12 +15,16 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            IsEof = false;
+            disposed = false;
+            _localStream = new StreamReader(fileFullPath, System.Text.Encoding.Default);
         }
-                
+
+        ~ReadOnlyStream()
+        {
+            Close();
+        }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
@@ -38,8 +42,15 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+                throw new ExceptionEndOfFile();
+            char c = ' ';
+            c = (char)_localStream.Read();
+            if (_localStream.EndOfStream)
+            {
+                IsEof = true;
+            }
+            return c;
         }
 
         /// <summary>
@@ -52,9 +63,23 @@ namespace TestTask
                 IsEof = true;
                 return;
             }
-
-            _localStream.Position = 0;
+            _localStream.BaseStream.Position = 0;
             IsEof = false;
+        }
+
+        public void Dispose()
+        {
+            Close();
+            GC.SuppressFinalize(this);
+        }
+
+        public void Close()
+        {
+            if (!disposed)
+            {
+                _localStream.Close();
+                disposed = true;
+            }
         }
     }
 }
