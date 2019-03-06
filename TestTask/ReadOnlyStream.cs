@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+        private Encoding _encoding;
+
 
         /// <summary>
         /// Конструктор класса. 
@@ -16,18 +19,18 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _encoding = Encoding.GetEncoding(1251);
+            _localStream = new StreamReader(fileFullPath).BaseStream;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
+        public bool IsEof { get; private set; }
+
+        public void Dispose()
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            _localStream.Dispose();
         }
 
         /// <summary>
@@ -38,8 +41,16 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            int b = _localStream.ReadByte();
+            if (b == -1)
+            {
+                IsEof = true;
+                return (char)0;
+            }
+
+
+            char c = Encoding.GetEncoding(1251).GetString(new byte[] { (byte)b })[0];
+            return c;
         }
 
         /// <summary>
