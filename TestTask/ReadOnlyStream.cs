@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader localStream;
+        private int position;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,19 +16,21 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            localStream = new StreamReader(fileFullPath);
+            position = 0;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                if (position > 0)
+                    return localStream.EndOfStream;
+                return false;
+            }
         }
 
         /// <summary>
@@ -38,23 +41,33 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+                throw new Exception("end of file reached");
+            var buffer = new char[1];
+            position = localStream.Read(buffer, 0, 1);
+            return buffer[0];
         }
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
-        public void ResetPositionToStart()
-        {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+        public void ResetPositionToStart() => position = 0;
 
-            _localStream.Position = 0;
-            IsEof = false;
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue)
+                return;
+
+            if (disposing)
+                localStream.Dispose();
+
+            disposedValue = true;
         }
+
+        public void Dispose() => Dispose(true);
+        #endregion
     }
 }
