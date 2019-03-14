@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
@@ -15,10 +16,7 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open);
         }
                 
         /// <summary>
@@ -26,8 +24,9 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get {
+                return _localStream.Position == _localStream.Length;
+            }
         }
 
         /// <summary>
@@ -38,8 +37,11 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+                throw new EndOfStreamException("End of stream is reached.");
+            Encoding win1251 = Encoding.GetEncoding(1251);
+            var b = _localStream.ReadByte();
+            return win1251.GetChars(BitConverter.GetBytes(b))[0];
         }
 
         /// <summary>
@@ -47,14 +49,14 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
-
             _localStream.Position = 0;
-            IsEof = false;
         }
+
+        #region IDisposable
+        public void Dispose()
+        {
+            _localStream.Dispose();
+        }
+        #endregion
     }
 }
