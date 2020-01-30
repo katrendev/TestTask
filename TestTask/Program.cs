@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestTask
 {
@@ -28,7 +29,9 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+
+	        // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+			Console.Read();
         }
 
         /// <summary>
@@ -49,16 +52,18 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+	        var statsDictionary = new Dictionary<char, LetterStats>();
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+				// TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+				if (statsDictionary.ContainsKey(c))
+		            IncStatistic(statsDictionary[c]);
+				else statsDictionary.Add(c, new LetterStats(c.ToString()));
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+	        return statsDictionary.Values.ToList();
         }
 
         /// <summary>
@@ -70,17 +75,29 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
-            stream.ResetPositionToStart();
+	        char? prev = null;
+	        var statsDictionary = new Dictionary<string, LetterStats>();
+			stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char c = char.ToLower(stream.ReadNextChar());
+
+	            if (prev.HasValue && prev == c)
+	            {
+		            prev = null;
+		            var pair = $"{c}{c}";
+		            if (statsDictionary.ContainsKey(pair))
+			            IncStatistic(statsDictionary[pair]);
+		            else statsDictionary.Add(pair, new LetterStats(pair));
+		            continue;
+	            }
+	            prev = c;
+
+	            // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
-        }
+			return statsDictionary.Values.ToList();
+		}
 
         /// <summary>
         /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.

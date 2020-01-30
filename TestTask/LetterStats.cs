@@ -3,9 +3,15 @@
     /// <summary>
     /// Статистика вхождения буквы/пары букв
     /// </summary>
-    public struct LetterStats
+    public class LetterStats
     {
-        /// <summary>
+	    public LetterStats(string letter)
+	    {
+		    Letter = letter;
+		    Count = 1;
+	    }
+
+		/// <summary>
         /// Буква/Пара букв для учёта статистики.
         /// </summary>
         public string Letter;
