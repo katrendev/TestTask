@@ -5,7 +5,7 @@ namespace TestTask
 {
 	public static class CharHelper
 	{
-		public static readonly ReadOnlyDictionary<char, CharType> CharTypes = new ReadOnlyDictionary<char, CharType>(new Dictionary<char, CharType>()
+		public static readonly ReadOnlyDictionary<char, CharType> Vowels = new ReadOnlyDictionary<char, CharType>(new Dictionary<char, CharType>()
 		{
 			{'a', CharType.Vowel},
 			{'у', CharType.Vowel},

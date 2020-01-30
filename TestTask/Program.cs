@@ -29,7 +29,6 @@ namespace TestTask
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
-	        // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
 			Console.Read();
         }
 
@@ -108,10 +107,10 @@ namespace TestTask
             switch (charType)
             {
                 case CharType.Consonants:
-	                letters.RemoveAll(x => CharHelper.CharTypes.ContainsKey(char.ToLower(x.Letter.First())));
+	                letters.RemoveAll(x => !CharHelper.Vowels.ContainsKey(char.ToLower(x.Letter.First())));
                     break;
                 case CharType.Vowel:
-	                letters.RemoveAll(x => !CharHelper.CharTypes.ContainsKey(char.ToLower(x.Letter.First())));
+	                letters.RemoveAll(x => CharHelper.Vowels.ContainsKey(char.ToLower(x.Letter.First())));
 					break;
             }
         }
