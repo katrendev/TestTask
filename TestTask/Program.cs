@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace TestTask
 {
@@ -128,8 +129,11 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+	        var sb = new StringBuilder();
+	        foreach (var letter in letters.OrderBy(x => x.Letter))
+				sb.Append($"{letter.Letter} : {letter.Count} \n");
+	        
+			Console.Write(sb.ToString());
         }
 
         /// <summary>
