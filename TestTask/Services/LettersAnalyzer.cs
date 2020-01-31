@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TestTask.Helpers;
+using TestTask.Models;
 
-namespace TestTask
+namespace TestTask.Services
 {
 	public static class LettersAnalyzer
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TestTask
+namespace TestTask.Helpers
 {
 	public static class IListExtensions
 	{
