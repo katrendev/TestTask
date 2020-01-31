@@ -50,19 +50,21 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static List<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
-	        var statsDictionary = new Dictionary<char, LetterStats>();
-            stream.ResetPositionToStart();
-            while (!stream.IsEof)
-            {
-                char c = stream.ReadNextChar();
+			var statsDictionary = new Dictionary<char, LetterStats>();
+	        stream.ResetPositionToStart();
+	        while (!stream.IsEof)
+	        {
+		        var c = stream.ReadNextChar();
+		        if (!char.IsLetter(c))
+			        continue;
 
-				if (statsDictionary.ContainsKey(c))
-		            IncStatistic(statsDictionary[c]);
-				else statsDictionary.Add(c, new LetterStats(c.ToString()));
-            }
-
+		        if (statsDictionary.ContainsKey(c))
+			        statsDictionary[c].IncStatistic();
+		        else statsDictionary.Add(c, new LetterStats(c.ToString()));
+	        }
+	        stream.Dispose();
 	        return statsDictionary.Values.ToList();
-        }
+		}
 
         /// <summary>
         /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения парных букв.
@@ -75,24 +77,30 @@ namespace TestTask
         {
 	        char? prev = null;
 	        var statsDictionary = new Dictionary<string, LetterStats>();
-			stream.ResetPositionToStart();
-            while (!stream.IsEof)
-            {
-                char c = char.ToLower(stream.ReadNextChar());
+	        stream.ResetPositionToStart();
+	        while (!stream.IsEof)
+	        {
+		        var c = char.ToUpper(stream.ReadNextChar());
+		        if (!char.IsLetter(c))
+		        {
+			        prev = null;
+			        continue;
+		        }
 
-	            if (prev.HasValue && prev == c)
-	            {
-		            prev = null;
-		            var pair = $"{c}{c}";
-		            if (statsDictionary.ContainsKey(pair))
-			            IncStatistic(statsDictionary[pair]);
-		            else statsDictionary.Add(pair, new LetterStats(pair));
-		            continue;
-	            }
-	            prev = c;
-            }
+		        if (prev.HasValue && prev == c)
+		        {
+			        prev = null;
+			        var pair = $"{c}{c}";
+			        if (statsDictionary.ContainsKey(pair))
+				        statsDictionary[pair].IncStatistic();
+			        else statsDictionary.Add(pair, new LetterStats(pair));
 
-			return statsDictionary.Values.ToList();
+			        continue;
+		        }
+		        prev = c;
+	        }
+	        stream.Dispose();
+	        return statsDictionary.Values.ToList();
 		}
 
         /// <summary>
@@ -130,16 +138,5 @@ namespace TestTask
 	        
 			Console.Write(sb.ToString());
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }

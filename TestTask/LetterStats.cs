@@ -20,5 +20,13 @@
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
-    }
+
+	    /// <summary>
+	    /// Метод увеличивает счётчик вхождений
+	    /// </summary>
+	    public void IncStatistic()
+	    {
+		    Count++;
+	    }
+	}
 }
