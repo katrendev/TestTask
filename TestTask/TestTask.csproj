@@ -44,7 +44,9 @@
   <ItemGroup>
     <Compile Include="CharHelper.cs" />
     <Compile Include="CharType.cs" />
+    <Compile Include="IListExtensions.cs" />
     <Compile Include="IReadOnlyStream.cs" />
+    <Compile Include="LettersAnalyzer.cs" />
     <Compile Include="LetterStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
