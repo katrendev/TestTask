@@ -1,11 +1,31 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+
+        private bool IsDisposed
+        {
+            get;
+            set;
+        }
+
+        public void Dispose()
+        {
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            _localStream.Dispose();
+            _localStream = null;
+
+            IsDisposed = true;
+        }
 
         /// <summary>
         /// Конструктор класса. 
@@ -17,8 +37,7 @@ namespace TestTask
         {
             IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = File.OpenRead(fileFullPath);
         }
                 
         /// <summary>
@@ -26,7 +45,7 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +57,31 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            var charCode = _localStream.ReadByte();
+
+            if (_localStream.ReadByte() == -1)
+            {
+                IsEof = true;
+                Dispose();
+            }
+            else
+            {
+                _localStream.Position--;
+
+                if (IsControlByte((byte)charCode))
+                {
+                    var utfCharcode = new byte[] { (byte)charCode, (byte)_localStream.ReadByte() };
+                    charCode = Convert.ToChar(Encoding.UTF8.GetString(utfCharcode));
+                }
+            }
+
+            return (char)charCode;
+        }
+
+        public bool IsControlByte(byte b)
+        {
+            var controlBytesStartPosition = 128;
+            return controlBytesStartPosition < b;
         }
 
         /// <summary>
