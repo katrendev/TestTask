@@ -1,4 +1,6 @@
-﻿namespace TestTask
+﻿using System;
+
+namespace TestTask
 {
     /// <summary>
     /// Тип букв
@@ -15,4 +17,5 @@
         /// </summary>
         Consonants
     }
+    
 }
