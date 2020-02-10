@@ -17,7 +17,6 @@ namespace TestTask
         {
             using (stream)
             {
-                stream.ResetPositionToStart();
                 while (!stream.IsEof)
                 {
                     var c = stream.ReadNextChar();

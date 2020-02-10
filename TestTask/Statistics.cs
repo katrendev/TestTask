@@ -14,6 +14,7 @@ namespace TestTask
         protected Statistics(string fileFullPath)
         {
             stream = new ReadOnlyStream(fileFullPath);
+            stream.ResetPositionToStart();
             FillStatistics();
         }
         protected abstract void FillStatistics();

@@ -8,16 +8,12 @@ namespace TestTask
 {
     public class DoubleLetterStatistics:Statistics
     {
-        public DoubleLetterStatistics(string fileFullPath) : base(fileFullPath)
-        {
-            
-        }
+        public DoubleLetterStatistics(string fileFullPath) : base(fileFullPath) { }
 
         protected sealed override void FillStatistics()
         {
             using (stream)
             {
-                stream.ResetPositionToStart();
                 var prevChar = new char();
                 while (!stream.IsEof)
                 {

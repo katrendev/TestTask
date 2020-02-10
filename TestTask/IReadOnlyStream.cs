@@ -8,7 +8,6 @@ namespace TestTask
     /// </summary>
     public interface IReadOnlyStream:IDisposable
     {
-        // TODO : Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
         char ReadNextChar();
 
         void ResetPositionToStart();
