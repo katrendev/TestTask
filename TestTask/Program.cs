@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -7,7 +8,6 @@ namespace TestTask
 {
     public class Program
     {
-
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
@@ -36,7 +36,6 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            //Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
             Console.ReadKey();
         }
 
@@ -63,7 +62,7 @@ namespace TestTask
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
-                var symbol = Convert.ToString(stream.ReadNextChar());
+                string symbol = Convert.ToString(stream.ReadNextChar(), CultureInfo.CreateSpecificCulture("ru-ru"));
                 if (!wordReg.IsMatch(symbol)) continue;
 
                 for (int ii = 0; ii < result.Count; ii++)

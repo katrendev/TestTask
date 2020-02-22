@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 
 namespace TestTask
@@ -21,7 +20,9 @@ namespace TestTask
             // Заменить на создание реального стрима для чтения файла!
             _localStream = File.OpenRead(fileFullPath);
         }
-
+        /// <summary>
+        /// Деструктор, закрывает файл
+        /// </summary>
         ~ReadOnlyStream()
         {
             Close();
@@ -34,7 +35,9 @@ namespace TestTask
             get; //Заполнять данный флаг при достижении конца файла/стрима при чтении
             private set;
         }
-
+        /// <summary>
+        /// Закрыть файл
+        /// </summary>
         public void Close()
         {
             IsEof = true;
@@ -60,8 +63,6 @@ namespace TestTask
             return Encoding.UTF8.GetChars(result)[0];
             
         }
-    
-
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
