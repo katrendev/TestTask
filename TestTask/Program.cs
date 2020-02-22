@@ -152,10 +152,20 @@ namespace TestTask
                     return;
             }
             
-
-            for(var i = 0;i< letters.Count;i++)
+            for(var i = 0;i < letters.Count; i++)
             {
-                if (wordReg.IsMatch(letters[i].Letter)) continue;
+                var flContinue = true;
+                for (var letter = 0; letter < letters[i].Letter.Length; letter++ )
+                {
+                    if (!wordReg.IsMatch(letters[i].Letter.Substring(letter, 1)))
+                    {
+                        flContinue = false;
+                        break;
+                    }
+                }
+                
+                if (flContinue) continue;
+                
                 letters.Remove(letters[i]);
                 i--;
             }
