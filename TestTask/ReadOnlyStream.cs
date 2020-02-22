@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
@@ -17,17 +18,28 @@ namespace TestTask
         {
             IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            // Заменить на создание реального стрима для чтения файла!
+            _localStream = File.OpenRead(fileFullPath);
         }
-                
+
+        ~ReadOnlyStream()
+        {
+            Close();
+        }
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get; //Заполнять данный флаг при достижении конца файла/стрима при чтении
             private set;
+        }
+
+        public void Close()
+        {
+            IsEof = true;
+            _localStream.Close();
+            _localStream = null;
         }
 
         /// <summary>
@@ -38,9 +50,17 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof) new FileLoadException();
+            if (_localStream == null) new FileNotFoundException();
+            
+            var result = new byte[2];
+
+            IsEof = _localStream.Read(result, 0, 2) <= 0;
+            
+            return Encoding.UTF8.GetChars(result)[0];
+            
         }
+    
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
