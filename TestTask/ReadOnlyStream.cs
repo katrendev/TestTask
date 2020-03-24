@@ -15,19 +15,38 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            IsEof = false;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = File.OpenRead(fileFullPath);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
+        private bool isEof;
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            {
+                if (_localStream.Position == _localStream.Length)
+                {
+                    isEof = true;
+                    Dispose();
+                }
+                else isEof = false;
+                return isEof;
+            }
+            private set
+            {
+                isEof = value;
+            }
+        }
+
+        public void Dispose()
+        {
+            _localStream.Close();
+            _localStream.Dispose();
         }
 
         /// <summary>
@@ -39,7 +58,18 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream.CanRead)
+            {
+                int result = _localStream.ReadByte();
+                if (result != -1)
+                    return (char)result;
+                else
+                {
+                    IsEof = true;
+                    throw new EndOfStreamException("Достигнут конец файла");
+                }
+            }
+            else throw new Exception("Поток не доступен для чтения!");
         }
 
         /// <summary>
