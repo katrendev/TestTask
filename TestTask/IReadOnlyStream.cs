@@ -6,11 +6,11 @@
     /// </summary>
     internal interface IReadOnlyStream
     {
-        // Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
+        // TODO : Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
         char ReadNextChar();
 
         void ResetPositionToStart();
 
-        bool IsEof { get; set; }
+        bool IsEof { get; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TestTask
 {
@@ -15,7 +14,7 @@ namespace TestTask
         /// </summary>
         /// <param name="args">Первый параметр - путь до первого файла.
         /// Второй параметр - путь до второго файла.</param>
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
@@ -29,9 +28,7 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
-            Console.WriteLine("Нажмите любую клавишу, для завершения работы программы:");
-            Console.ReadKey();
+            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
 
         /// <summary>
@@ -53,44 +50,15 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-
-            //Создаем список структур LetterStats, каждая из которых имеет определенную, нигде не повторяющуюся букву
-            var letterStatsList = new List<LetterStats>();
-
-            //Создаем список уже считанных букв для быстроты проверки
-            var readLetterList = new List<char>();
-
             while (!stream.IsEof)
             {
-                var currentChar = stream.ReadNextChar();
-
-                // Проверка на то, что текущий символ - буква
-                if (!char.IsLetter(currentChar))
-                {
-                    continue;
-                }
-
-                // Проверка на наличие символа в списке уже считанных символов.
-                // В случае неуспешной проверки создать новый список буквенной статистики и добавить символ в список считанных символов.
-                if (!readLetterList.Contains(currentChar))
-                {
-                    readLetterList.Add(currentChar);
-
-                    letterStatsList.Add(new LetterStats { Letter = currentChar.ToString(), Count = 1 });
-                }
-                else
-                {
-                    foreach (var letterStats in letterStatsList)
-                    {
-                        if (letterStats.Letter == currentChar.ToString())
-                        {
-                            IncStatistic(letterStats);
-                        }
-                    }
-                }
+                char c = stream.ReadNextChar();
+                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
             }
 
-            return letterStatsList;
+            //return ???;
+
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -103,56 +71,15 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-
-            //Создаем список структур LetterStats, каждая из которых имеет определенную, нигде не повторяющуюся букву
-            var letterStatsList = new List<LetterStats>();
-
-            //Создаем список уже считанных букв для быстроты проверки
-            var readLetterList = new List<string>();
-
-            //Предыдущий символ для поиска пар символов
-            char? previousChar = null;
-
             while (!stream.IsEof)
             {
-                //Так как статика не регистрозависимая, то пусть символ будет строчным
-                var currentChar = char.ToLower(stream.ReadNextChar());
-
-                // Проверка на то, что текущий символ - буква
-                if (!char.IsLetter(currentChar))
-                {
-                    continue;
-                }
-
-                // Проверка на рядомстоящую пару одинаковых символов
-                if (currentChar == previousChar)
-                {
-                    var charPair = previousChar + "" + currentChar;
-
-                    // Проверка на наличие символа в списке уже считанных символов.
-                    // В случае неуспешной проверки создать новый список буквенной статистики и добавить символ в список считанных символов.
-                    if (!readLetterList.Contains(charPair))
-                    {
-                        readLetterList.Add(charPair);
-
-                        letterStatsList.Add(new LetterStats { Letter = charPair, Count = 1 });
-                    }
-                    else
-                    {
-                        foreach (var letterStats in letterStatsList)
-                        {
-                            if (letterStats.Letter == charPair)
-                            {
-                                IncStatistic(letterStats);
-                            }
-                        }
-                    }
-                }
-
-                previousChar = currentChar;
+                char c = stream.ReadNextChar();
+                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
             }
 
-            return letterStatsList;
+            //return ???;
+
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -164,50 +91,15 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            //Список гласных букв для удаления их из статистики
-            var vowelsLetters = new List<char> { 'а', 'у', 'о', 'ы', 'и', 'э', 'я', 'ю', 'ё', 'е' };
-            //Список согласных букв для удаления их из статистики
-            var consonantsList = new List<char> { 'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш', 'щ' };
-
+            // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
-                    foreach (var letter in consonantsList)
-                    {
-                        for (var i = 0; i < letters.Count; i++)
-                        {
-                            //Проверяем буквы статистики на наличие согласных
-                            //Так как удаляем просто согласные, то делаем это независимо от регистра
-                            if (!letters[i].Letter.ToLower().Contains(letter.ToString()))
-                            {
-                                continue;
-                            }
-
-                            letters.RemoveAt(i);
-                            i = 0;
-                        }
-                    }
                     break;
                 case CharType.Vowel:
-                    foreach (var letter in vowelsLetters)
-                    {
-                        for (var i = 0; i < letters.Count; i++)
-                        {
-                            //Проверяем буквы статистики на наличие гласных
-                            //Так как удаляем просто гласные, то делаем это независимо от регистра
-                            if (!letters[i].Letter.ToLower().Contains(letter.ToString()))
-                            {
-                                continue;
-                            }
-
-                            letters.RemoveAt(i);
-                            i = 0;
-                        }
-                    }
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(charType), charType, null);
             }
+            
         }
 
         /// <summary>
@@ -216,13 +108,11 @@ namespace TestTask
         /// Выводить на экран необходимо предварительно отсортировав набор по алфавиту.
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
-        /// <param name="lettersStats">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> lettersStats)
+        /// <param name="letters">Коллекция со статистикой</param>
+        private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            foreach (var letterStats in lettersStats.OrderBy(l => l.Letter))
-            {
-                Console.WriteLine(letterStats.Letter + " : " + letterStats.Count);
-            }
+            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -233,5 +123,7 @@ namespace TestTask
         {
             letterStats.Count++;
         }
+
+
     }
 }
