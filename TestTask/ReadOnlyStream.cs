@@ -1,11 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -17,16 +16,15 @@ namespace TestTask
         {
             IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +36,15 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            var result = _localStream.Read();
+
+            if (result.Equals(-1))
+            {
+                IsEof = true;
+                throw new EndOfStreamException("Был достигнут конец файла, дальнейшее чтение потока невозможно.");
+            }
+
+            return (char)result;
         }
 
         /// <summary>
@@ -53,8 +58,19 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
+            _localStream.BaseStream.Position = 0;
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Закрывает поток
+        /// </summary>
+        public void Close()
+        {
+            if (_localStream != null)
+            {
+                _localStream.Close();
+            }
         }
     }
 }
