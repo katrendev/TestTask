@@ -6,7 +6,7 @@ namespace TestTask
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
-
+        BinaryReader BW;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,19 +15,38 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            _IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+
+            _localStream = File.OpenRead(fileFullPath);
+
+            BW = new BinaryReader(_localStream);
+            _IsEof = false;
         }
-                
+
+        bool _IsEof;
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get { return _IsEof || _localStream.Position == _localStream.Length; }
+            private set { _IsEof = value; }
+        }
+
+        public void Close()
+        {
+            _localStream.Close();
+            _localStream.Dispose();
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                Close();
+            }
+            catch {}
         }
 
         /// <summary>
@@ -38,8 +57,15 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            try
+            {
+                return BW.ReadChar();
+            }
+            catch (Exception)
+            {
+                _IsEof = true;
+                throw;
+            }
         }
 
         /// <summary>
@@ -49,12 +75,12 @@ namespace TestTask
         {
             if (_localStream == null)
             {
-                IsEof = true;
+                _IsEof = true;
                 return;
             }
 
             _localStream.Position = 0;
-            IsEof = false;
+            _IsEof = false;
         }
     }
 }
