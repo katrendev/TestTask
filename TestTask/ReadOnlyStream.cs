@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
@@ -7,6 +8,8 @@ namespace TestTask
     {
         private Stream _localStream;
 
+        private string _fileName;
+        
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,12 +18,31 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _fileName = fileFullPath;
         }
-                
+
+        public char[] ReadFile()
+        {
+            byte[] data;
+            if (File.Exists(_fileName))
+            {
+                var srcEncoding = Encoding.GetEncoding(1251);
+                char[] dataCh;
+                using (FileStream fs = new FileStream(_fileName, FileMode.Open))
+                {
+                    long lenght = fs.Length;
+                    data = new byte[lenght];
+                    fs.Read(data, 0, (int)lenght);
+
+                    dataCh = Encoding.Default.GetChars(data);
+                    fs.Close();
+                }
+                return dataCh;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>

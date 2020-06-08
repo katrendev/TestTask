@@ -11,6 +11,8 @@
 
         void ResetPositionToStart();
 
-        bool IsEof { get; }
+        char[] ReadFile();
+
+        bool IsEof { get;  }
     }
 }
