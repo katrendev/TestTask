@@ -36,8 +36,8 @@ namespace TestTask
                 doubleLetterStats = FillDoubleLetterStats(inputStream2);
             }
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(ref singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(ref doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
@@ -120,22 +120,24 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(ref IList<LetterStats> letters, CharType charType)
         {
             // TODO : DONE Удалить статистику по запрошенному типу букв.
+            //List<LetterStats> letterstats = new List<LetterStats>();
             switch (charType)
             {
                 case CharType.Consonants:
                     {
-                        letters = letters.Where(x => !Regex.IsMatch(x.Letter, "[бвгджзйклмнпрстфхцчшщ]", RegexOptions.IgnoreCase)).ToList();
+                        letters = letters?.Where(x => !Regex.IsMatch(x.Letter, "[бвгджзйклмнпрстфхцчшщ]", RegexOptions.IgnoreCase)).ToList();
                         break;
                     }
                 case CharType.Vowel:
                     {
-                        letters = letters.Where(x => !Regex.IsMatch(x.Letter, "[аеёиоуыэюя]", RegexOptions.IgnoreCase)).ToList();
+                        letters = letters?.Where(x => !Regex.IsMatch(x.Letter, "[аеёиоуыэюя]", RegexOptions.IgnoreCase)).ToList();
                         break;
                     }
             }
+            //return letterstats;
         }
 
         /// <summary>
