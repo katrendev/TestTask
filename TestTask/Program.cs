@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TestTask
 {
@@ -16,11 +18,23 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
-
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Не указаны пути к файлам");
+                Console.ReadKey(false);
+                return;
+            }
+                
+            IList<LetterStats> singleLetterStats;
+            IList<LetterStats> doubleLetterStats;
+            using (IReadOnlyStream inputStream1 = GetInputStream(args[0]))
+            {
+                singleLetterStats = FillSingleLetterStats(inputStream1);
+            }
+            using (IReadOnlyStream inputStream2 = GetInputStream(args[1]))
+            {
+                doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            }
 
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
             RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
@@ -28,7 +42,8 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            // TODO : DONE Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey(false);
         }
 
         /// <summary>
@@ -50,15 +65,19 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterstats = new List<LetterStats>();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                string c = stream.ReadNextChar().ToString();
+                LetterStats ls = letterstats.FirstOrDefault(x => x.Letter == c);
+                if (ls == null)
+                {
+                    letterstats.Add(new LetterStats() { Letter = c, Count = 1 });
+                }
+                else IncStatistic(ls);
+                // TODO : DONE заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return letterstats;
         }
 
         /// <summary>
@@ -71,15 +90,27 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterstats = new List<LetterStats>();
+            string c;
+            if (!stream.IsEof) c = stream.ReadNextChar().ToString();
+            else return letterstats;
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                string cnext = stream.ReadNextChar().ToString();
+                if (c.ToLower() == cnext.ToLower())
+                {
+                    Console.WriteLine($"{c} {cnext}");
+                    LetterStats ls = letterstats.FirstOrDefault(x => x.Letter.ToLower() == (c + cnext).ToLower());
+                    if (ls == null)
+                    {
+                        letterstats.Add(new LetterStats() { Letter = (c + cnext), Count = 1 });
+                    }
+                    else IncStatistic(ls);
+                }
+                c = cnext;
+                // TODO : DONE заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return letterstats;
         }
 
         /// <summary>
@@ -91,15 +122,20 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
+            // TODO : DONE Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
-                    break;
+                    {
+                        letters = letters.Where(x => !Regex.IsMatch(x.Letter, "[бвгджзйклмнпрстфхцчшщ]", RegexOptions.IgnoreCase)).ToList();
+                        break;
+                    }
                 case CharType.Vowel:
-                    break;
+                    {
+                        letters = letters.Where(x => !Regex.IsMatch(x.Letter, "[аеёиоуыэюя]", RegexOptions.IgnoreCase)).ToList();
+                        break;
+                    }
             }
-            
         }
 
         /// <summary>
@@ -111,8 +147,12 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            // TODO : DONE Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
+            letters.OrderBy(x => x.Letter);
+            foreach (var letter in letters)
+            {
+                Console.WriteLine($"{{{letter.Letter}}} : {{{letter.Count}}}");
+            }
         }
 
         /// <summary>
@@ -123,7 +163,5 @@ namespace TestTask
         {
             letterStats.Count++;
         }
-
-
     }
 }

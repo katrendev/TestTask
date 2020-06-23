@@ -5,7 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +15,8 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            // TODO : DONE Заменить на создание реального стрима для чтения файла!
+            _localStream = new StreamReader(fileFullPath);
         }
                 
         /// <summary>
@@ -26,8 +24,13 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                if (_localStream == null || _localStream.EndOfStream)
+                    return true;
+                else
+                    return false;
+            }// TODO : DONE Заполнять данный флаг при достижении конца файла/стрима при чтении
         }
 
         /// <summary>
@@ -38,8 +41,9 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            // TODO : DONE Необходимо считать очередной символ из _localStream
+            int c = _localStream.Read();
+            return (char)c;
         }
 
         /// <summary>
@@ -49,12 +53,30 @@ namespace TestTask
         {
             if (_localStream == null)
             {
-                IsEof = true;
                 return;
             }
-
-            _localStream.Position = 0;
-            IsEof = false;
+            _localStream.BaseStream.Position = 0;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // Для определения избыточных вызовов
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _localStream.Dispose();
+                }
+                disposedValue = true;
+            }
+        }
+        // Этот код добавлен для правильной реализации шаблона высвобождаемого класса.
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }
