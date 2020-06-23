@@ -17,17 +17,4 @@ namespace TestTask
         /// </summary>
         public int Count;
     }
-
-    public class CaseSensetiveComparer : IEqualityComparer<LetterStats>
-    {
-        public bool Equals(LetterStats x, LetterStats y)
-        {
-            return x.Letter == y.Letter;
-        }
-
-        public int GetHashCode(LetterStats ls)
-        {
-            return ls.GetHashCode();
-        }
-    }
 }
