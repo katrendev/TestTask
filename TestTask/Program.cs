@@ -22,27 +22,34 @@ namespace TestTask
                 Console.WriteLine("Not enough arguments!");
                 return;
             }
+
             if (!File.Exists(args[0]) || !File.Exists(args[1]))
             {
                 Console.WriteLine("Wrong file path!");
                 return;
             }
+
+            IList<LetterStats> singleLetterStats;
+            IList<LetterStats> doubleLetterStats;
+
             using (var inputStream1 = GetInputStream(args[0]))
             {
-                using (var inputStream2 = GetInputStream(args[1]))
-                {
-                    var singleLetterStats = FillSingleLetterStats(inputStream1);
-                    var doubleLetterStats = FillDoubleLetterStats(inputStream2);
-
-                    RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-                    RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
-
-                    PrintStatistic(singleLetterStats);
-                    PrintStatistic(doubleLetterStats);
-
-                    Console.ReadKey();
-                }
+                singleLetterStats = FillSingleLetterStats(inputStream1);
             }
+
+            using (var inputStream2 = GetInputStream(args[1]))
+            {
+                doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            }
+
+
+            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+
+            PrintStatistic(singleLetterStats);
+            PrintStatistic(doubleLetterStats);
+
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -120,7 +127,7 @@ namespace TestTask
                     int i;
                     for (i = 0; i < answer.Count; i++)
                     {
-                        if (answer[i].Letter == string.Concat(leftChar, rightChar))
+                        if (answer[i].Letter == leftChar.ToString() + rightChar)
                         {
                             answer[i] = IncStatistic(answer[i]);
                             break;
@@ -130,7 +137,7 @@ namespace TestTask
                     if (i == answer.Count)
                     {
                         var newStruct = new LetterStats
-                            {Letter = string.Concat(leftChar, rightChar), Count = 1};
+                            {Letter = leftChar.ToString() + rightChar, Count = 1};
                         answer.Add(newStruct);
                     }
                 }
@@ -151,8 +158,8 @@ namespace TestTask
                     list.RemoveAt(i);
                 }
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
         /// (Тип букв для перебора определяется параметром charType)
@@ -167,9 +174,9 @@ namespace TestTask
                 switch (charType)
                 {
                     case CharType.Vowel:
-                        return "aeiouAEIOU".IndexOf(c.Letter[0]) >= 0;
+                        return "aeiouAEIOUауоыиэяюёеАУОЫИЭЯЮЁE".IndexOf(c.Letter[0]) >= 0;
                     case CharType.Consonants:
-                        return "aeiouAEIOU".IndexOf(c.Letter[0]) < 0;
+                        return "aeiouAEIOUауоыиэяюёеАУОЫИЭЯЮЁE".IndexOf(c.Letter[0]) < 0;
                 }
 
                 return false;
