@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
+        private bool _disposed;
+        private bool _isEof;
 
         /// <summary>
         /// Конструктор класса. 
@@ -16,18 +19,16 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get => _isEof || _localStream.EndOfStream;
+            private set => _isEof = value;
         }
 
         /// <summary>
@@ -38,8 +39,14 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (!IsEof)
+            {
+                var buffer = new char[1];
+                _localStream.Read(buffer, 0, 1);
+                return buffer[0];
+            }
+
+            throw new EndOfStreamException();
         }
 
         /// <summary>
@@ -53,8 +60,30 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
+            _localStream.BaseStream.Position = 0;
             IsEof = false;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~ReadOnlyStream()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            if (disposing)
+            {
+                _localStream.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }
