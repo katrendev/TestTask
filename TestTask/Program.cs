@@ -194,7 +194,7 @@ namespace TestTask
                 Console.WriteLine($"{ls.Letter} : {ls.Count}");
             }
 
-            Console.WriteLine(letterStats.Sum(ls => ls.Count));
+            Console.WriteLine($"Итого: {letterStats.Sum(ls => ls.Count)}");
         }
 
         /// <summary>
