@@ -5,8 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
-
+        private readonly StreamReader _localStream;//поскольку работа с текстовым файлом изменим тип потока для дальнейшего чтения символов, а не потока байт
+        private bool disposed = false;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,10 +15,17 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+
+            try
+            {
+                _localStream = new StreamReader(fileFullPath);
+            }
+            catch(FileNotFoundException)
+            {
+                Console.WriteLine("The file or directory cannot be found.");
+            }
         }
                 
         /// <summary>
@@ -26,8 +33,11 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+          // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get { if (_localStream == null || _localStream.EndOfStream)
+                         return true; 
+                    return false; }
+
         }
 
         /// <summary>
@@ -39,7 +49,7 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            return (char)_localStream.Read();
         }
 
         /// <summary>
@@ -49,12 +59,34 @@ namespace TestTask
         {
             if (_localStream == null)
             {
-                IsEof = true;
                 return;
             }
 
-            _localStream.Position = 0;
-            IsEof = false;
+            _localStream.BaseStream.Seek(0, SeekOrigin.Begin);
+
+            _localStream.DiscardBufferedData();
         }
+        //следующий два метода реализуют интерфейс IDisposable для освобождения неуправляемых ресурсов
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    _localStream.Dispose();
+                }
+                disposed = true;
+            }
+
+        }
+
+
     }
 }
