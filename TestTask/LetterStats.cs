@@ -28,6 +28,9 @@
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
+        /// <param name="charType">Тип звука.</param>
+        /// <param name="Letter">Буква/Пара букв.</param>
+        /// <param name="Count">Кол-во вхождений буквы/пары.</param>
         public LetterStats(CharType charType, string Letter, int Count)
         {
             this.charType = charType;
