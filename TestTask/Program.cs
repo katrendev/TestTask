@@ -88,7 +88,8 @@ namespace TestTask
                 {
                     CharType type = Vowel.Contains(value) ? CharType.Vowel : CharType.Consonants;
                     singleLetters.Add(new LetterStats(type, value, 1));
-                }          
+                }  
+            }
             return singleLetters;
         }
 
