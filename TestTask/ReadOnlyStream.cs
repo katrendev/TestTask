@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,20 +16,17 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            var fileStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            _localStream = new StreamReader(fileStream);
         }
                 
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+        
+        // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+        public bool IsEof => _localStream.EndOfStream;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -36,25 +34,22 @@ namespace TestTask
         /// должен бросать соответствующее исключение
         /// </summary>
         /// <returns>Считанный символ.</returns>
+
+        // TODO : Необходимо считать очередной символ из _localStream
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+            {
+                throw new IOException("Попытка чтения после достижения конца файла");
+            }
+            return (char) _localStream.Read();
         }
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
-        public void ResetPositionToStart()
-        {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+        public void ResetPositionToStart() => _localStream.BaseStream.Position = 0;
 
-            _localStream.Position = 0;
-            IsEof = false;
-        }
+        public void Dispose() => _localStream.Close();
     }
 }

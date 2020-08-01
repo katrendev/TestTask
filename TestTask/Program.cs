@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestTask
 {
@@ -22,13 +23,14 @@ namespace TestTask
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
             IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            singleLetterStats = RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            doubleLetterStats = RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            // TODO : Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -49,16 +51,20 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            var statistics = new LetterStatistics();
+            
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
+                var c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                // надеюсь, требование на использование IncStatistic не столь критично,
+                // тут совсем неудобно хранить список статистик
+                if (char.IsLetter(c))
+                    statistics.IncreaseStatistic(c.ToString());
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return statistics.GetStatsList();
         }
 
         /// <summary>
@@ -70,16 +76,25 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            var statistics = new LetterStatistics();
+            
             stream.ResetPositionToStart();
+            var previousChar = '\0';
+
+            bool CaseInvariantEquals(char a, char b) => char.ToLower(a) == char.ToLower(b);
+
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
+                var c = stream.ReadNextChar();
+                
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                if (char.IsLetter(c) && CaseInvariantEquals(previousChar, c))
+                    statistics.IncreaseStatistic(char.ToLower(c).ToString());
+                
+                previousChar = c;
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return statistics.GetStatsList();
         }
 
         /// <summary>
@@ -89,17 +104,14 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static IList<LetterStats> RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
-            {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
-            }
+            Func<LetterStats, bool> typeFilter = (stat) => stat.GetCharType() != charType;
             
+            // переписал тут на метод, который новый список, а не мутирует значение
+            // небольшое изменение, но чистые фунции проще использовать и тестировать
+            return letters.Where((stats) => typeFilter(stats)).ToList();
         }
 
         /// <summary>
@@ -112,18 +124,14 @@ namespace TestTask
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            var totalCount = 0;
+            foreach (var stats in letters.OrderBy((stat) => stat.Letter))
+            {
+                Console.WriteLine($"{stats.Letter} : {stats.Count}");
+                totalCount += stats.Count;
+            }
+
+            Console.WriteLine($"Итого : {totalCount}");
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }
