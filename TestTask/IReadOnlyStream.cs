@@ -1,16 +1,32 @@
-﻿namespace TestTask
+﻿using System;
+using System.Collections.Generic;
+
+namespace TestTask
 {
+    
     /// <summary>
-    /// Интерфейс для работы с файлом в сильно урезаном виде.
-    /// Умеет всего 2 вещи: прочитать символ, и перемотать стрим на начало.
+    /// Reading all data from stream and stored in buffer
     /// </summary>
-    internal interface IReadOnlyStream
+    public interface IReadOnlyStream: IDisposable
     {
-        // TODO : Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
-        char ReadNextChar();
+        /// <summary>
+        /// Get the all readed symbols exluded a special symbols
+        /// </summary>
+        IEnumerable<char> Items { get; set; }
 
-        void ResetPositionToStart();
+        /// <summary>
+        /// Reload data
+        /// </summary>
+        void Reload();
 
-        bool IsEof { get; }
+        /// <summary>
+        /// Return the current name of file
+        /// </summary>
+        string FileName { get; }
+
+        /// <summary>
+        /// The flag 
+        /// </summary>
+        bool IsReady { get; }
     }
 }

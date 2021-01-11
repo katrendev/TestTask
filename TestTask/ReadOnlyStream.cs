@@ -1,60 +1,86 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace TestTask
 {
+    /// <summary>
+    /// Implementation for interface IReadOnlyStream
+    /// </summary>
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        #region fields
 
-        /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
-        /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
+        private string _localFileName = "";
+        private IEnumerable<char> _buffer = null;
+        private bool _isReady = false;
+
+        #endregion
+
+        #region ctor
+
+        public ReadOnlyStream()
+        { }
+
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            if (!File.Exists(fileFullPath))
+                throw new Exception($"File not found! See path: {fileFullPath}");
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
-        }
-                
-        /// <summary>
-        /// Флаг окончания файла.
-        /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            _localFileName = fileFullPath;
+            ReloadAsync();
         }
 
-        /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
-        /// </summary>
-        /// <returns>Считанный символ.</returns>
-        public char ReadNextChar()
+        #endregion
+
+        #region implement IReadOnlyStream
+        IEnumerable<char> IReadOnlyStream.Items { get => _buffer; set => _buffer = value; }
+
+        string IReadOnlyStream.FileName => _localFileName;
+
+        bool IReadOnlyStream.IsReady => _isReady;
+
+        void IDisposable.Dispose()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            // Clear buffer
+            if (_buffer != null)
+                _buffer = null;
         }
 
-        /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
-        /// </summary>
-        public void ResetPositionToStart()
+        void IReadOnlyStream.Reload()
         {
-            if (_localStream == null)
+            ReloadAsync();
+        }
+
+        #endregion
+
+        #region implement IDisposable
+
+        public void Dispose()
+        {
+            if (_buffer != null)
+                _buffer = null;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Reload data from stream to buffer 
+        /// </summary>
+        private async void ReloadAsync()
+        {
+            _isReady = false;
+            if (!string.IsNullOrEmpty(_localFileName))
             {
-                IsEof = true;
-                return;
+                using (var reader = new StringReader(_localFileName))
+                {
+                    var data = await reader.ReadToEndAsync();
+                    _buffer = data.ToCharArray();
+                    _isReady = true;
+                }
             }
-
-            _localStream.Position = 0;
-            IsEof = false;
+            else
+                throw new Exception("File not listed!");
         }
     }
 }
