@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace TestTask
 {
+    // The test class
     [TestClass]
     public class LogicTest
     {
