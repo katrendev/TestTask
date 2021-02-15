@@ -17,7 +17,9 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
+#if DEBUG
             args = new string[] { "TestFiles\\File1.txt", "TestFiles\\File2.txt" };
+#endif
             if (args.Length != 2)
             {
                 Console.WriteLine("Задано неверное количество аргументов, укажите 2 аргумента, где:" +
