@@ -49,5 +49,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOnlyStream.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestFiles\File1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\File2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
