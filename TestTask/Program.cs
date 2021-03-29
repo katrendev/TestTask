@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TestTask
 {
@@ -18,24 +19,34 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            //ReadOnlyStream inputStream2 = GetInputStream(args[1]);
-            const string testPath1 = "test1.txt";
-            IReadOnlyStream inputStream1 = GetInputStream(testPath1);
-            IReadOnlyStream inputStream2 = GetInputStream(testPath1);
+            if (args.Length != 2)
+            {
+                Console.WriteLine("Must be exactly 2 file paths");
+                Console.Read();
+                return;
+            }
+            var singleTask = Task.Run(() =>
+            {
+                MainRun(args[0], CharType.Vowel, FillSingleLetterStats);
+            });
+            var doubleTask = Task.Run(() => {
+                MainRun(args[1], CharType.Consonants, FillDoubleLetterStats);
+            });
 
-            var singleLetterStats = FillSingleLetterStats(inputStream1);
-            inputStream1.Close();
-            var doubleLetterStats = FillDoubleLetterStats(inputStream2);
-            inputStream2.Close();
-
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
-
-            PrintStatistic(singleLetterStats.Values);
-            PrintStatistic(doubleLetterStats.Values);
-
+            Task.WaitAll(singleTask, doubleTask);
             Console.Read();
+        }
+
+        private static void MainRun(string fileName, CharType? charTypeToRemove, Func<IReadOnlyStream,Dictionary<char,LetterStats>> countFunction)
+        {
+            var inputStream = GetInputStream(fileName);
+            var letterStats = countFunction(inputStream);
+            inputStream.Close();
+            if (charTypeToRemove.HasValue)
+            {
+                RemoveCharStatsByType(letterStats, charTypeToRemove.Value);
+            }
+            PrintStatistic(letterStats.Values);
         }
 
         /// <summary>
