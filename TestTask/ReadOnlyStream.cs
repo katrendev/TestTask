@@ -3,9 +3,12 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
+    public class ReadOnlyStream : IReadOnlyStream, IDisposable
     {
-        private Stream _localStream;
+        private StreamReader _localStreamReader;
+        private string _fileFullPath;
+        //private MemoryStream _localMemoryStream;
+        private bool _disposed = false;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,12 +18,15 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            IsEof = false;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _fileFullPath = fileFullPath;
+            _localStreamReader = new StreamReader(_fileFullPath);
+
+            //_localMemoryStream = new MemoryStream(File.ReadAllBytes(fileFullPath));
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
@@ -39,7 +45,65 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (!IsEof)
+            {
+                char result = (char)_localStreamReader.Read();
+                if (_localStreamReader.Peek() < 0)
+                {
+                    IsEof = true;
+                }
+                return result;
+            }
+            else
+            {
+                throw new InvalidOperationException("Достигнут конец файла");
+            }
+
+            /*
+            if (!IsEof)
+            {
+                char result = (char)_localMemoryStream.ReadByte();                
+
+                if (_localMemoryStream.Length == _localMemoryStream.Position)
+                {
+                    IsEof = true;
+                }
+                return result;
+            }
+            else
+            {
+                throw new InvalidOperationException("Достигнут конец файла");
+            }
+            */
+        }
+        /// <summary>
+        /// Ф-ция получения следующего символа из потока без перевода позиции. 
+        /// Если следующий символ отсутствует - возвращает значение по умолчанию.
+        /// </summary>
+        /// <returns>Считанный символ.</returns>
+        public char GetNextChar()
+        {
+            if (_localStreamReader.Peek() > 0)
+            {
+                return (char)_localStreamReader.Peek();
+            }
+            else
+            {
+                return new char();
+            }
+
+            /*
+            if (_localMemoryStream.Length != _localMemoryStream.Position)
+            {
+                char result = (char)_localMemoryStream.ReadByte();
+                _localMemoryStream.Position--; //Вернуть позицию
+                return result;
+            }
+            else
+            {
+                return new char();
+            }
+            */
         }
 
         /// <summary>
@@ -47,14 +111,42 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            _localStreamReader = new StreamReader(_fileFullPath);
+            //_localMemoryStream.Position = 0;
 
-            _localStream.Position = 0;
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Реализация интерфейса IDisposable.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            // подавляем финализацию
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Освобождаем управляемые ресурсы
+                    _localStreamReader?.Close();
+                }
+                // Освобождаем неуправляемые объекты             
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Деструктор
+        /// </summary>
+        ~ReadOnlyStream()
+        {
+            Dispose(false);
         }
     }
 }

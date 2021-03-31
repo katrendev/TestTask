@@ -6,6 +6,11 @@
     public enum CharType
     {
         /// <summary>
+        /// Неизвестный символ
+        /// </summary>
+        Unknown,
+
+        /// <summary>
         /// Гласные
         /// </summary>
         Vowel,
