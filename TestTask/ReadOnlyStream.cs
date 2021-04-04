@@ -3,11 +3,10 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream, IDisposable
+    public class ReadOnlyStream : IReadOnlyStream
     {
         private StreamReader _localStreamReader;
         private string _fileFullPath;
-        //private MemoryStream _localMemoryStream;
         private bool _disposed = false;
 
         /// <summary>
@@ -23,8 +22,6 @@ namespace TestTask
             // TODO : Заменить на создание реального стрима для чтения файла!
             _fileFullPath = fileFullPath;
             _localStreamReader = new StreamReader(_fileFullPath);
-
-            //_localMemoryStream = new MemoryStream(File.ReadAllBytes(fileFullPath));
         }
 
         /// <summary>
@@ -58,23 +55,6 @@ namespace TestTask
             {
                 throw new InvalidOperationException("Достигнут конец файла");
             }
-
-            /*
-            if (!IsEof)
-            {
-                char result = (char)_localMemoryStream.ReadByte();                
-
-                if (_localMemoryStream.Length == _localMemoryStream.Position)
-                {
-                    IsEof = true;
-                }
-                return result;
-            }
-            else
-            {
-                throw new InvalidOperationException("Достигнут конец файла");
-            }
-            */
         }
         /// <summary>
         /// Ф-ция получения следующего символа из потока без перевода позиции. 
@@ -91,19 +71,6 @@ namespace TestTask
             {
                 return new char();
             }
-
-            /*
-            if (_localMemoryStream.Length != _localMemoryStream.Position)
-            {
-                char result = (char)_localMemoryStream.ReadByte();
-                _localMemoryStream.Position--; //Вернуть позицию
-                return result;
-            }
-            else
-            {
-                return new char();
-            }
-            */
         }
 
         /// <summary>
@@ -112,7 +79,6 @@ namespace TestTask
         public void ResetPositionToStart()
         {
             _localStreamReader = new StreamReader(_fileFullPath);
-            //_localMemoryStream.Position = 0;
 
             IsEof = false;
         }

@@ -18,15 +18,18 @@ namespace TestTask
         {
             try
             {
-                IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-                IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+                using (IReadOnlyStream inputStream1 = GetInputStream(args[0]))
+                {
+                    using (IReadOnlyStream inputStream2 = GetInputStream(args[1]))
+                    {
+                        IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
+                        IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-                IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-                IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
-
-                PrintStatistic(RemoveCharStatsByType(singleLetterStats, CharType.Vowel));
-                Console.WriteLine("=====================");
-                PrintStatistic(RemoveCharStatsByType(doubleLetterStats, CharType.Consonants));
+                        PrintStatistic(RemoveCharStatsByType(singleLetterStats, CharType.Vowel));
+                        Console.WriteLine("=====================");
+                        PrintStatistic(RemoveCharStatsByType(doubleLetterStats, CharType.Consonants));
+                    }
+                }               
             }
             catch (Exception ex)
             {
