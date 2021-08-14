@@ -5,7 +5,9 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+     
+        private bool _disposed;
+        private readonly StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -16,17 +18,15 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath);
         }
                 
         /// <summary>
-        /// Флаг окончания файла.
+        /// Флаг окончания файла
         /// </summary>
-        public bool IsEof
+        public bool IsEof 
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -35,15 +35,22 @@ namespace TestTask
         /// Если произведена попытка прочитать символ после достижения конца файла, метод 
         /// должен бросать соответствующее исключение
         /// </summary>
-        /// <returns>Считанный символ.</returns>
+        /// <returns>Считанный символ</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+            {
+                throw new IOException("Файл был прочитан!!!");
+            }
+
+            char ch = Convert.ToChar(_localStream.Read());
+            IsEof = _localStream.EndOfStream;
+
+            return ch;
         }
 
         /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
+        /// Сбрасывает текущую позицию потока на начало
         /// </summary>
         public void ResetPositionToStart()
         {
@@ -53,8 +60,22 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
+            _localStream.DiscardBufferedData();
+            _localStream.BaseStream.Seek(0, SeekOrigin.Begin);
+
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Очистка ресурсов
+        /// </summary>
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _localStream.Dispose();
+                _disposed = true;
+            }
         }
     }
 }
