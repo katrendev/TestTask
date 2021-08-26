@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private readonly Stream _localStream;
+        private readonly StreamReader _streamReader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,20 +16,25 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            try
+            {
+                _localStream = new FileStream(fileFullPath, FileMode.Open);
+                _streamReader = new StreamReader(_localStream);
+                IsEof = false;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"{fileFullPath} not open");
+                _localStream = Stream.Null;
+                _streamReader = StreamReader.Null;
+                IsEof = true;
+            }
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+        public bool IsEof { get; private set; }
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -38,8 +44,19 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            char nextChar = (char) 0;
+
+            if (!_streamReader.EndOfStream)
+            {
+                nextChar = (char) _streamReader.Read();
+            }
+            else
+            {
+                IsEof = true;
+                throw new EndOfStreamException();
+            }
+
+            return nextChar;
         }
 
         /// <summary>
@@ -55,6 +72,12 @@ namespace TestTask
 
             _localStream.Position = 0;
             IsEof = false;
+        }
+
+        public void CloseStream()
+        {
+            _streamReader.Close();
+            _localStream.Close();
         }
     }
 }
