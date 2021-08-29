@@ -15,7 +15,7 @@ namespace TestTask
 
         #region Private Fields
 
-        private readonly TextReader _localStream;
+        private TextReader _localStream;
         private char[] _buffer = new char[BUFFER_SIZE];
         private bool _disposed = false;
 
@@ -29,13 +29,9 @@ namespace TestTask
         /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        public ReadOnlyStream()
         {
             IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            //_localStream = null; 
-            _localStream = Task.Run(async () => await InstantiateStreamReader(fileFullPath)).Result;
         }
 
         #endregion
@@ -60,9 +56,23 @@ namespace TestTask
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         /// <returns>Поток для последующего чтения.</returns>
-        internal static IReadOnlyStream GetInputStream(string fileFullPath)
+        internal static async Task<IReadOnlyStream> GetInputStreamAsync(string fileFullPath)
         {
-            return new ReadOnlyStream(fileFullPath);
+            // TODO : Заменить на создание реального стрима для чтения файла!
+            //_localStream = null;
+
+            var instance = new ReadOnlyStream();
+
+            try
+            {
+                instance._localStream = await InitializeStreamReaderAsync(fileFullPath);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.ToString());
+            }
+
+            return instance;
         }
 
         /// <summary>
@@ -82,7 +92,16 @@ namespace TestTask
                 throw new EndOfStreamException("The end of stream has already been reached.");
             }
 
-            int bytesRead = await _localStream.ReadAsync(_buffer, 0, BUFFER_SIZE);
+            int bytesRead = 0;
+
+            try
+            {
+                bytesRead = await _localStream.ReadAsync(_buffer, 0, BUFFER_SIZE);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.ToString());
+            }
 
             if (bytesRead == 0)
             {
@@ -95,16 +114,25 @@ namespace TestTask
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
-        public void ResetPositionToStart()
+        public async Task ResetPositionToStartAsync()
         {
             if (_localStream == null)
             {
                 IsEof = true;
-                return;
             }
+            else
+            {
+                try
+                {
+                    await Task.Run(() => (_localStream as StreamReader).BaseStream.Position = 0);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.ToString());
+                }
 
-            (_localStream as StreamReader).BaseStream.Position = 0;
-            IsEof = false;
+                IsEof = false;
+            }
         }
 
         #endregion
@@ -144,24 +172,8 @@ namespace TestTask
         /// </summary>
         /// <param name="path">A full path to a file.</param>
         /// <returns></returns>
-        private async Task<TextReader> InstantiateStreamReader(string path)
-        {
-            TextReader textReader = null;
-
-            await Task.Run(() =>
-            {
-                try
-                {
-                    textReader = new StreamReader(path);
-                }
-                catch (Exception e)
-                {
-                    throw new Exception(e.ToString());
-                }
-            });
-
-            return textReader;
-        }
+        private static Task<StreamReader> InitializeStreamReaderAsync(string path) =>
+            Task.Run(() => new StreamReader(path));
 
         #endregion
     }

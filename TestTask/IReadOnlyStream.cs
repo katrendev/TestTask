@@ -12,7 +12,7 @@ namespace TestTask
         // TODO : Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
         Task<char> ReadNextCharAsync();
 
-        void ResetPositionToStart();
+        Task ResetPositionToStartAsync();
 
         bool IsEof { get; }
     }

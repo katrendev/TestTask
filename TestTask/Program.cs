@@ -15,21 +15,15 @@ namespace TestTask
         /// </summary>
         /// <param name="args">Первый параметр - путь до первого файла.
         /// Второй параметр - путь до второго файла.</param>
-        /// 
-        public static void Main(string[] args)
-        {
-            MainAsync(args).GetAwaiter().GetResult();
-        }
-
-        private static async Task MainAsync(string[] args)
+        static async Task Main(string[] args)
         {
             if (CheckArgs(args))
             {
                 return;
             }
 
-            using (IReadOnlyStream inputStream1 = ReadOnlyStream.GetInputStream(args[0]),
-                                   inputStream2 = ReadOnlyStream.GetInputStream(args[1]))
+            using (IReadOnlyStream inputStream1 = await ReadOnlyStream.GetInputStreamAsync(args[0]),
+                                   inputStream2 = await ReadOnlyStream.GetInputStreamAsync(args[1]))
             {
                 IList<LetterStats> singleLetterStats = await Statistics.FillSingleLetterStatsAsync(inputStream1);
                 IList<LetterStats> doubleLetterStats = await Statistics.FillDoubleLetterStatsAsync(inputStream2);

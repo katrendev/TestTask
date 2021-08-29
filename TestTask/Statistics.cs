@@ -18,7 +18,7 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         internal static async Task<IList<LetterStats>> FillSingleLetterStatsAsync(IReadOnlyStream stream)
         {
-            stream.ResetPositionToStart();
+            await stream.ResetPositionToStartAsync();
 
             IList<LetterStats> letterStatsList = new List<LetterStats>();
 
@@ -29,7 +29,7 @@ namespace TestTask
                 
                 if (c != default)
                 {
-                    await DoStatistics(letterStatsList, c.ToString(), StringComparison.InvariantCulture);
+                    await DoStatisticsAsync(letterStatsList, c.ToString(), StringComparison.InvariantCulture);
                 }
             }
 
@@ -45,7 +45,7 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         internal static async Task<IList<LetterStats>> FillDoubleLetterStatsAsync(IReadOnlyStream stream)
         {
-            stream.ResetPositionToStart();
+            await stream.ResetPositionToStartAsync();
 
             IList<LetterStats> letterStatsList = new List<LetterStats>();
 
@@ -67,7 +67,7 @@ namespace TestTask
                     stringBuilder.Append(left);
                     stringBuilder.Append(right);
 
-                    await DoStatistics(letterStatsList, stringBuilder.ToString(), StringComparison.InvariantCultureIgnoreCase);
+                    await DoStatisticsAsync(letterStatsList, stringBuilder.ToString(), StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 left = right;
@@ -83,9 +83,9 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        public static async Task<IList<LetterStats>> RemoveCharStatsByTypeAsync(IList<LetterStats> letters, CharType charType)
+        internal static Task<IList<LetterStats>> RemoveCharStatsByTypeAsync(IList<LetterStats> letters, CharType charType)
         {
-            return await Task.Run(() =>
+            return Task.Run(() =>
             {
                 // TODO : Удалить статистику по запрошенному типу букв.
                 string charTypeCollection = default;
@@ -113,7 +113,7 @@ namespace TestTask
                     }
                 }
 
-                return letters.Except(toDelete).ToList();
+                return (IList<LetterStats>)letters.Except(toDelete).ToList();
             });
         }
 
@@ -124,39 +124,51 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        public static async Task PrintStatisticsAsync(IEnumerable<LetterStats> letters)
+        internal static async Task PrintStatisticsAsync(IEnumerable<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            await Task.Run(() =>
+
+            if (letters.Count() == 0)
             {
-                if (letters.Count() == 0)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("No data available.");
-
-                    return;
-                }
-
-                letters = letters.OrderBy(s => s.Letter);
-
                 Console.WriteLine();
+                Console.WriteLine("No data available.");
 
-                foreach (LetterStats letterStats in letters)
-                {
-                    Console.WriteLine($"{letterStats.Letter} : {letterStats.Count}");
-                }
+                return;
+            }
 
-                int count = (from letter in letters
-                             select letter.Count).Sum();
+            letters = await SortAsync(letters);
 
-                Console.WriteLine();
-                Console.WriteLine($"Total: {count} {SetUnits(letters.First(), count)}");
-            });
+            foreach (LetterStats letterStats in letters)
+            {
+                Console.WriteLine($"{letterStats.Letter} : {letterStats.Count}");
+            }
+
+            int count = await SumAsync(letters);
+
+            Console.WriteLine();
+            Console.WriteLine($"Total: {count} {SetUnits(letters.First(), count)}");
+            Console.WriteLine();
         }
 
         #endregion
 
         #region Private Helpers
+
+        /// <summary>
+        /// Sorts a collection in the ascending order.
+        /// </summary>
+        /// <param name="letters">The collection to sort.</param>
+        /// <returns>A new sorted collection.</returns>
+        private static Task<IEnumerable<LetterStats>> SortAsync(IEnumerable<LetterStats> letters) =>
+            Task.Run(() => (IEnumerable<LetterStats>)letters.OrderBy(s => s.Letter));
+
+        /// <summary>
+        /// Returns a total of all letters/pairs occurences.
+        /// </summary>
+        /// <param name="letters">The collection of letters/pairs.</param>
+        /// <returns></returns>
+        private static Task<int> SumAsync(IEnumerable<LetterStats> letters) =>
+            Task.Run(() => (from letter in letters select letter.Count).Sum());
 
         /// <summary>
         /// Метод увеличивает счётчик вхождений по переданной структуре.
@@ -188,9 +200,9 @@ namespace TestTask
         /// <param name="datum">A piece of data to collect.</param>
         /// <param name="stringComparison">A method to compare strings.</param>
         /// <returns></returns>
-        private static async Task DoStatistics(IList<LetterStats> letterStatsList, string datum, StringComparison stringComparison)
+        private static Task DoStatisticsAsync(IList<LetterStats> letterStatsList, string datum, StringComparison stringComparison)
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 LetterStats letterStats =
                   letterStatsList.FirstOrDefault(s => datum.Equals(s.Letter, stringComparison));
