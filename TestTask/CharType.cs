@@ -8,7 +8,7 @@
         /// <summary>
         /// Гласные
         /// </summary>
-        Vowel,
+        Vowels,
 
         /// <summary>
         /// Согласные

@@ -1,11 +1,12 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private readonly FileStream _localStream;
+        private readonly BinaryReader _reader;
+        private bool _isEof;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,19 +16,27 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            _reader = new BinaryReader(_localStream);
+            _isEof = _localStream.Position >= _localStream.Length;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get => _isEof;
+            private set => _isEof = value;
+        }
+
+        /// <summary>
+        /// Освободить ресурсы занятые потоком
+        /// </summary>
+        public void Dispose()
+        {
+            _reader.Dispose();
+            _localStream.Dispose();
         }
 
         /// <summary>
@@ -38,8 +47,19 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream.Position >= _localStream.Length)
+            {
+                throw new IOException("Нет данных для чтения из потока");
+            }
+
+            var nextChar = _reader.ReadChar();
+
+            if (_localStream.Position == _localStream.Length)
+            {
+                IsEof = true;
+            }
+
+            return nextChar;
         }
 
         /// <summary>
@@ -47,14 +67,11 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
+            if (_localStream != null)
             {
-                IsEof = true;
-                return;
+                _localStream.Position = 0;
+                IsEof = _localStream.Position >= _localStream.Length;
             }
-
-            _localStream.Position = 0;
-            IsEof = false;
         }
     }
 }
