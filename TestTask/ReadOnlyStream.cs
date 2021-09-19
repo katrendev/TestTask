@@ -27,7 +27,7 @@ namespace TestTask
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("The process failed: {0}", e.ToString());
+				Console.WriteLine("The process failed: {0}", e.Message);
 			}
 		}
 
@@ -78,5 +78,12 @@ namespace TestTask
 			_localStreamReader.BaseStream.Position = 0;
 			IsEof = false;
 		}
+
+		public void Dispose()
+		{
+			_localStreamReader.Close();
+			IsEof = true;
+		}
 	}
+
 }

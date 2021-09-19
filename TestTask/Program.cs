@@ -39,6 +39,7 @@ namespace TestTask
 			PrintStatistic(doubleLetterStats);
 
 			// TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+			Console.WriteLine("Press any key to finish!");
 			Console.ReadKey();
 		}
 
