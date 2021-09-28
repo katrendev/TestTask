@@ -92,7 +92,7 @@ namespace TestTask
 			stream.ResetPositionToStart();
 			
 			var letters = new Dictionary<string, LetterStats>();
-			var folder = new char[N];
+			var folder = new char[N];//TODO: массив ни к чему, там лежат одинаковые символы 
 
 			var current = stream.ReadNextChar();
 			while (!char.IsLetter(current) && !stream.IsEof)
@@ -192,11 +192,7 @@ namespace TestTask
 		/// Метод увеличивает счётчик вхождений по переданной структуре.
 		/// </summary>
 		/// <param name="letterStats"></param>
-		private static void IncStatistic(LetterStats letterStats)
-		{
-			letterStats.Count++;
-		}
-
+		private static void IncStatistic(LetterStats letterStats) => letterStats.Count++;
 
 	}
 }
