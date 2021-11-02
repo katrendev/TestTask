@@ -19,31 +19,34 @@ namespace TestTask
             //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
-            string firstTestFilePath = @"C:\MyData\Soft\WinRar\ReadMe.rus.txt";
-            string secondTestFilePath = @"C:\MyData\Soft\Git\LICENSE.txt";
+            string firstTestFilePath = @"C:\Users\Alter\Desktop\B.txt";
+            string secondTestFilePath = @"C:\Users\Alter\Desktop\A.txt"; 
 
-            try
-            {
+            //string firstTestFilePath = @"C:\MyData\Soft\WinRar\ReadMe.rus.txt";
+            //string secondTestFilePath = @"C:\MyData\Soft\Git\LICENSE.txt";
+
+            //try
+            //{
                 //Выполнение первой задачи приложения.
-                using (IReadOnlyStream inputStream1 = GetInputStream(firstTestFilePath))
+                using (IReadOnlyStream singleCharInputStream = GetInputStream(secondTestFilePath))
                 {
-                    IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
+                    IList<LetterStats> singleLetterStats = FillSingleLetterStats(singleCharInputStream);
                     //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
                     //PrintStatistic(singleLetterStats);
                 }
 
                 //Выполнение второй задачи приложения.
-                using (IReadOnlyStream inputStream2 = GetInputStream(secondTestFilePath))
+                using (IReadOnlyStream inputStream2 = GetInputStream(firstTestFilePath))
                 {
                     //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
                     //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
                     //PrintStatistic(doubleLetterStats);
                 }
-            }
-            catch
-            {
+            //}
+            //catch(Exception ex)
+            //{
 
-            }
+            //}
 
             // TODO : Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
             Console.ReadKey();
@@ -60,7 +63,7 @@ namespace TestTask
         }
 
         /// <summary>
-        /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения каждой буквы.
+        /// Метод считывающий из входящего потока все буквы, и возвращающая коллекцию статистик вхождения каждой буквы.
         /// Статистика РЕГИСТРОЗАВИСИМАЯ!
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
@@ -71,10 +74,9 @@ namespace TestTask
             while (!stream.IsEndOfFile)
             {
                 char c = stream.ReadNextChar();
+
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
             }
-
-            //return ???;
 
             throw new NotImplementedException();
         }

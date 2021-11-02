@@ -12,10 +12,15 @@ namespace TestTask
         #region Private Fields
 
         /// <summary>
-        /// Поток данных полученый из входящего файла.
+        /// Поток данных полученый из входящего файла который хранится в памяти.
         /// </summary>
-        private readonly StreamReader _localStream;
-        StreamReader streamReader;
+        private readonly MemoryStream _localStream;
+
+        /// <summary>
+        /// Преобразованный поток данных из файла для удобной работы с текстами.
+        /// </summary>
+        private readonly StreamReader _streamReader;
+
         #endregion Private Fields
 
         #region Public Properties
@@ -23,12 +28,7 @@ namespace TestTask
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public bool IsEndOfFile
-        {
-            // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            get;//=> _localStream.Position == _localStream.Length;
-            private set; //{ }
-        }
+        public bool IsEndOfFile => _streamReader.EndOfStream;
 
         #endregion Public Properties
 
@@ -45,10 +45,12 @@ namespace TestTask
             // TODO : Заменить на создание реального стрима для чтения файла!
             using (FileStream fileStream = File.OpenRead(fileFullPath))
             {
-                int streamSize = (int)fileStream.Length;
-                _localStream = new StreamReader(fileStream, Encoding.UTF8);
+                var streamCapacity = (int)fileStream.Length;
+                _localStream = new MemoryStream(streamCapacity);
 
-                //fileStream.CopyTo(_localStream);
+                fileStream.CopyTo(_localStream);
+
+                _streamReader = new StreamReader(_localStream, Encoding.UTF8);
             }
         }
 
@@ -61,8 +63,8 @@ namespace TestTask
         /// </summary>
         public void Dispose()
         {
-            //Хотя при использовании MemoryStream, Dispose() можно и не вызывать.
             _localStream?.Dispose();
+            _streamReader?.Dispose();
         }
 
         /// <summary>
@@ -72,8 +74,8 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            //_localStream.Position
-            throw new NotImplementedException();
+            var simbol = _streamReader.Read();
+            return Convert.ToChar(simbol);
         }
 
         /// <summary>
@@ -81,14 +83,7 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEndOfFile = true;
-                return;
-            }
-
-            //_localStream.Position = 0;
-            IsEndOfFile = false;
+            _streamReader.BaseStream.Position = 0;
         }
 
         #endregion Public Methods
