@@ -16,23 +16,41 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
+            //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            string firstTestFilePath = @"C:\MyData\Soft\WinRar\ReadMe.rus.txt";
+            string secondTestFilePath = @"C:\MyData\Soft\Git\LICENSE.txt";
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            try
+            {
+                //Выполнение первой задачи приложения.
+                using (IReadOnlyStream inputStream1 = GetInputStream(firstTestFilePath))
+                {
+                    IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
+                    //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+                    //PrintStatistic(singleLetterStats);
+                }
 
-            PrintStatistic(singleLetterStats);
-            PrintStatistic(doubleLetterStats);
+                //Выполнение второй задачи приложения.
+                using (IReadOnlyStream inputStream2 = GetInputStream(secondTestFilePath))
+                {
+                    //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+                    //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+                    //PrintStatistic(doubleLetterStats);
+                }
+            }
+            catch
+            {
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            }
+
+            // TODO : Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey();
         }
 
         /// <summary>
-        /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
+        /// Метод возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         /// <returns>Поток для последующего чтения.</returns>
@@ -50,7 +68,7 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            while (!stream.IsEof)
+            while (!stream.IsEndOfFile)
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
@@ -71,7 +89,7 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            while (!stream.IsEof)
+            while (!stream.IsEndOfFile)
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
@@ -99,7 +117,7 @@ namespace TestTask
                 case CharType.Vowel:
                     break;
             }
-            
+
         }
 
         /// <summary>
