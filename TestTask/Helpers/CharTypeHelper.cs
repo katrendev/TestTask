@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace TestTask.Helpers
 {
-    internal class CharTypeHelper
+    internal static class CharTypeHelper
     {
         /// <summary>
         /// Набор гласных букв для русского языка.
         /// </summary>
-        internal const string RUS_VOWELS = "АУОЫИЭЯЮЁЕ";
+        internal const string RUS_EN_VOWELS = "АУОЫИЭЯЮЁЕAEIOUY";
 
         /// <summary>
         /// Набор согласных букв для русского языка.
         /// </summary>
-        internal const string RUS_CONSONANTS = "БВГДЖЗЙКЛМНПРСТФХЦЧШЩ";
+        internal const string RUS_EN_CONSONANTS = "БВГДЖЗЙКЛМНПРСТФХЦЧШЩBCDFGHJKLMNPQRSTVWXZ";
 
         /// <summary>
         /// Набор гласных букв для английского языка.

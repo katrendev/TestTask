@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TestTask.Helpers;
 using TestTask.Models;
 using TestTask.Interfaces;
+using System.IO;
 
 namespace TestTask
 {
@@ -30,28 +31,40 @@ namespace TestTask
             string firstTestFilePath = @"C:\MyData\Soft\WinRar\ReadMe.rus.txt";
             string secondTestFilePath = @"C:\MyData\Soft\Git\LICENSE.txt";
 
-            //try
-            //{
-            //Выполнение первой задачи приложения.
-            using (IReadOnlyStream singleCharInputStream = GetInputStream(secondTestFilePath))
+            try
             {
-                IList<LetterStats> singleLetterStats = GetSymbolStatistic(singleCharInputStream, FillSingleLetterStats);
-                RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-                //PrintStatistic(singleLetterStats);
-            }
+                //Выполнение первой задачи приложения.
+                using (IReadOnlyStream singleCharInputStream = GetInputStream(secondTestFilePath))
+                {
+                    IList<LetterStats> singleLetterStats = GetSymbolStatistic(singleCharInputStream, FillSingleLetterStats);
+                    RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+                    PrintStatistic(singleLetterStats, 1);
+                }
 
-            //Выполнение второй задачи приложения.
-            using (IReadOnlyStream doubleCharInputStream = GetInputStream(firstTestFilePath))
-            {
-                IList<LetterStats> doubleLetterStats = GetSymbolStatistic(doubleCharInputStream, FillDoubleLetterStats);
-                //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
-                //PrintStatistic(doubleLetterStats);
+                //Выполнение второй задачи приложения.
+                using (IReadOnlyStream doubleCharInputStream = GetInputStream(firstTestFilePath))
+                {
+                    IList<LetterStats> doubleLetterStats = GetSymbolStatistic(doubleCharInputStream, FillDoubleLetterStats);
+                    RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+                    PrintStatistic(doubleLetterStats, 2);
+                }
             }
-            //}
-            //catch(DirectoryNotFoundException ex)
-            //{
-            //OverflowException когда -1
-            //}
+            catch (DirectoryNotFoundException ex)
+            {
+                Console.WriteLine($"Произошла ошибка связанная с файловой директроие: {ex.Message}");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"Произошла ошибка связанная с доступом к файлу: {ex.Message}");
+            }
+            catch (OverflowException ex)
+            {
+                Console.WriteLine($"Произошло ошибка при чтении файла: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Произошла критическая: {ex.Message}");
+            }
 
             // TODO : Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
             Console.ReadKey();
@@ -183,38 +196,48 @@ namespace TestTask
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
+            Action<string> removeLogic = charTypeCollection =>
+            {
+                if (letters is List<LetterStats> lettersList)
+                {
+                    foreach (var letter in charTypeCollection)
+                    {
+                        lettersList.RemoveAll(stat => stat.Letter.ToUpper().FirstOrDefault() == letter);
+                    }
+                }
+            };
+
             switch (charType)
             {
                 case CharType.Consonants:
+                    removeLogic(CharTypeHelper.RUS_EN_CONSONANTS);
                     break;
                 case CharType.Vowel:
+                    removeLogic(CharTypeHelper.RUS_EN_VOWELS);
                     break;
             }
         }
 
-
-
-
-
-
-
-
-
-
         /// <summary>
-        /// Ф-ция выводит на экран полученную статистику в формате "{Буква} : {Кол-во}"
+        /// Метод выводит на экран полученную статистику в формате "{Буква} : {Кол-во}"
         /// Каждая буква - с новой строки.
         /// Выводить на экран необходимо предварительно отсортировав набор по алфавиту.
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
-        /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        /// <param name="stats">Коллекция со статистикой</param>
+        private static void PrintStatistic(IEnumerable<LetterStats> stats, int documentNumber)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            Console.WriteLine($"-- Результ анализа документа № {documentNumber} --");
+
+            var sortStats = stats.OrderBy(stat => stat.Letter);
+            foreach (var stat in sortStats)
+            {
+                Console.WriteLine($"{stat.Letter} : {stat.Count}");
+            }
+
+            Console.WriteLine($"ИТОГО: {stats.Count()}\n");
         }
-
-
 
         #endregion Private Methods
 
