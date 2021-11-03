@@ -15,7 +15,7 @@
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
         /// </summary>
-        public char Letter { get; }
+        public string Letter { get; }
 
         #endregion Public Properties
 
@@ -25,10 +25,10 @@
         /// Инициализирует свойства структуры <see cref="LetterStats"/>
         /// </summary>
         /// <param name="letter"></param>
-        public LetterStats(char letter)
+        public LetterStats(string letter)
         {
             Letter = letter;
-            Count = 0;
+            Count = 1;
         }
 
         #endregion Public Constructors

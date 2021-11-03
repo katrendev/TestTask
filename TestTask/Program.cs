@@ -37,9 +37,9 @@ namespace TestTask
             }
 
             //Выполнение второй задачи приложения.
-            using (IReadOnlyStream inputStream2 = GetInputStream(firstTestFilePath))
+            using (IReadOnlyStream doubleCharInputStream = GetInputStream(firstTestFilePath))
             {
-                //IList<LetterStats> doubleLetterStats = GetSymbolStatistic(inputStream2);
+                IList<LetterStats> doubleLetterStats = GetSymbolStatistic(doubleCharInputStream, FillDoubleLetterStats);
                 //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
                 //PrintStatistic(doubleLetterStats);
             }
@@ -64,7 +64,7 @@ namespace TestTask
         }
 
         /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
+        /// Метод увеличивает счётчик вхождений по переданной статистике.
         /// </summary>
         /// <param name="letterStats"></param>
         private static void IncStatistic(LetterStats letterStats)
@@ -75,22 +75,18 @@ namespace TestTask
         /// <summary>
         /// Выполняет анализ текстового потока данных и возвращает статистику составленную в соответствии с некоторой, переданной в метод, логикой.
         /// </summary>
-        /// <param name="symbolStream">Анализируемый поток данных.</param>
+        /// <param name="symbolStream">Ана0лизируемый поток данных.</param>
         /// <param name="addToStatisticCallback">Метод реализующий логику анализа данных.</param>
         /// <returns>Сведенную статистику.</returns>
-        private static List<LetterStats> GetSymbolStatistic(IReadOnlyStream symbolStream, Action<char, IList<LetterStats>> addToStatisticCallback)
-        {             // ^ Заменил возвращаемый тип на более конкретный, так как согласно одного из дополнений принципа Барбары Лисков -
+        private static List<LetterStats> GetSymbolStatistic(IReadOnlyStream symbolStream, Action<IReadOnlyStream, IList<LetterStats>> addToStatisticCallback)
+        {             // ^ Заменил возвращаемый тип на более конкретный, так как согласно одного из дополнений к принципу Барбары Лисков -
                       //   должна быть поддержана контрвариантность возвращаемых значений.
 
             symbolStream.ResetPositionToStart();
 
             var resultStatistic = new List<LetterStats>();
 
-            while (!symbolStream.IsEndOfFile)
-            {
-                char c = symbolStream.ReadNextChar();
-                addToStatisticCallback.Invoke(c, resultStatistic);
-            }
+            addToStatisticCallback?.Invoke(symbolStream, resultStatistic);
 
             return resultStatistic;
         }
@@ -99,22 +95,28 @@ namespace TestTask
         /// Анализирует входящий символ, и добавляет его к статистике, если символ является буквой.
         /// Статистика РЕГИСТРОЗАВИСИМАЯ!
         /// </summary>
-        /// <param name="symbol">Входящий символ для анализа.</param>
+        /// <param name="symbolStream">Входящий символ для анализа.</param>
         /// <param name="statCollection">Коллекция статистик.</param>
-        private static void FillSingleLetterStats(char symbol, IList<LetterStats> statCollection)
+        private static void FillSingleLetterStats(IReadOnlyStream symbolStream, IList<LetterStats> statCollection)
         {
             // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
-            if (Char.IsLetter(symbol))
+
+            while (!symbolStream.IsEndOfFile)
             {
-                var availableSymbol = statCollection.FirstOrDefault(stat => stat.Letter == symbol);
-                if (availableSymbol != null)
+                char symbol = symbolStream.ReadNextChar();
+
+                if (Char.IsLetter(symbol))
                 {
-                    IncStatistic(availableSymbol);
-                }
-                else
-                {
-                    var newStats = new LetterStats(symbol);
-                    statCollection.Add(newStats);
+                    var availableSymbol = statCollection.FirstOrDefault(stat => stat.Letter == symbol.ToString());
+                    if (availableSymbol != null)
+                    {
+                        IncStatistic(availableSymbol);
+                    }
+                    else
+                    {
+                        var newStats = new LetterStats(symbol.ToString());
+                        statCollection.Add(newStats);
+                    }
                 }
             }
         }
@@ -124,14 +126,47 @@ namespace TestTask
         /// В статистику должны попадать только пары из одинаковых букв, например АА, СС, УУ, ЕЕ и т.д.
         /// Статистика - НЕ регистрозависимая!
         /// </summary>
-        /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
-        /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(char symbol, IList<LetterStats> statCollection)
+        /// <param name="symbolStream">Стрим для считывания символов для последующего анализа</param>
+        /// <param>Коллекция статистик по каждой букве, что была прочитана из стрима.</param>
+        private static void FillDoubleLetterStats(IReadOnlyStream symbolStream, IList<LetterStats> statCollection)
         {
+            // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
 
+            char previousSymbol = char.MinValue;
 
+            while (!symbolStream.IsEndOfFile)
+            {
+                char currentSymbol = symbolStream.ReadNextChar();
 
-            return null;
+                if (Char.IsLetter(currentSymbol))
+                {
+                    char upperCurrentSymbol = Char.ToUpper(currentSymbol);
+
+                    if (upperCurrentSymbol != previousSymbol)
+                    {
+                        previousSymbol = upperCurrentSymbol;
+                        continue;
+                    }
+
+                    string doubleLetter = $"{previousSymbol}{upperCurrentSymbol}";
+
+                    var availableSymbol = statCollection.FirstOrDefault(stat => stat.Letter == doubleLetter);
+                    if (availableSymbol != null)
+                    {
+                        IncStatistic(availableSymbol);
+                    }
+                    else
+                    {
+                        var newStats = new LetterStats(doubleLetter);
+                        statCollection.Add(newStats);
+                    }
+                }
+                else
+                {
+                    previousSymbol = char.MinValue;
+                }
+            }
+
         }
 
 
