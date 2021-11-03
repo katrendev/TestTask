@@ -9,6 +9,7 @@ namespace TestTask
     /// </summary>
     public sealed class ReadOnlyStream : IReadOnlyStream
     {
+
         #region Private Fields
 
         /// <summary>
@@ -74,8 +75,15 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            var simbol = _streamReader.Read();
-            return Convert.ToChar(simbol);
+            try
+            {
+                var simbol = _streamReader.Read();
+                return Convert.ToChar(simbol);
+            }
+            catch(OverflowException exception)
+            {
+                throw exception;
+            }
         }
 
         /// <summary>
@@ -87,5 +95,6 @@ namespace TestTask
         }
 
         #endregion Public Methods
+
     }
 }
