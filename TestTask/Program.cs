@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using TestTask.Helpers;
+using TestTask.Models;
+using TestTask.Interfaces;
 
 namespace TestTask
 {
     public class Program
     {
+        #region Private Methods
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -15,10 +19,10 @@ namespace TestTask
         /// </summary>
         /// <param name="args">Первый параметр - путь до первого файла.
         /// Второй параметр - путь до второго файла.</param>
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            //string firstTestFilePath = args[0];
+            //string secondTestFilePath = args[1];
 
             //string firstTestFilePath = @"C:\Users\Alter\Desktop\B.txt";
             //string secondTestFilePath = @"C:\Users\Alter\Desktop\A.txt"; 
@@ -32,7 +36,7 @@ namespace TestTask
             using (IReadOnlyStream singleCharInputStream = GetInputStream(secondTestFilePath))
             {
                 IList<LetterStats> singleLetterStats = GetSymbolStatistic(singleCharInputStream, FillSingleLetterStats);
-                //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+                RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
                 //PrintStatistic(singleLetterStats);
             }
 
@@ -64,21 +68,12 @@ namespace TestTask
         }
 
         /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной статистике.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-        /// <summary>
         /// Выполняет анализ текстового потока данных и возвращает статистику составленную в соответствии с некоторой, переданной в метод, логикой.
         /// </summary>
         /// <param name="symbolStream">Ана0лизируемый поток данных.</param>
-        /// <param name="addToStatisticCallback">Метод реализующий логику анализа данных.</param>
-        /// <returns>Сведенную статистику.</returns>
-        private static List<LetterStats> GetSymbolStatistic(IReadOnlyStream symbolStream, Action<IReadOnlyStream, IList<LetterStats>> addToStatisticCallback)
+        /// <param name="CreateStatisticCallback">Метод реализующий логику анализа данных.</param>
+        /// <returns>Сведенная статистика.</returns>
+        private static List<LetterStats> GetSymbolStatistic(IReadOnlyStream symbolStream, Action<IReadOnlyStream, IList<LetterStats>> CreateStatisticCallback)
         {             // ^ Заменил возвращаемый тип на более конкретный, так как согласно одного из дополнений к принципу Барбары Лисков -
                       //   должна быть поддержана контрвариантность возвращаемых значений.
 
@@ -86,7 +81,7 @@ namespace TestTask
 
             var resultStatistic = new List<LetterStats>();
 
-            addToStatisticCallback?.Invoke(symbolStream, resultStatistic);
+            CreateStatisticCallback?.Invoke(symbolStream, resultStatistic);
 
             return resultStatistic;
         }
@@ -127,7 +122,7 @@ namespace TestTask
         /// Статистика - НЕ регистрозависимая!
         /// </summary>
         /// <param name="symbolStream">Стрим для считывания символов для последующего анализа</param>
-        /// <param>Коллекция статистик по каждой букве, что была прочитана из стрима.</param>
+        /// <param name="statCollection">Коллекция статистик.</param>
         private static void FillDoubleLetterStats(IReadOnlyStream symbolStream, IList<LetterStats> statCollection)
         {
             // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
@@ -151,6 +146,7 @@ namespace TestTask
                     string doubleLetter = $"{previousSymbol}{upperCurrentSymbol}";
 
                     var availableSymbol = statCollection.FirstOrDefault(stat => stat.Letter == doubleLetter);
+
                     if (availableSymbol != null)
                     {
                         IncStatistic(availableSymbol);
@@ -166,17 +162,19 @@ namespace TestTask
                     previousSymbol = char.MinValue;
                 }
             }
-
         }
 
-
-
-
-
-
+        /// <summary>
+        /// Метод увеличивает счётчик вхождений по переданной статистике.
+        /// </summary>
+        /// <param name="letterStats"></param>
+        private static void IncStatistic(LetterStats letterStats)
+        {
+            letterStats.Count++;
+        }
 
         /// <summary>
-        /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
+        /// Метод перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
         /// (Тип букв для перебора определяется параметром charType)
         /// Все найденные буквы/пары соответствующие параметру поиска - удаляются из переданной коллекции статистик.
         /// </summary>
@@ -192,8 +190,13 @@ namespace TestTask
                 case CharType.Vowel:
                     break;
             }
-
         }
+
+
+
+
+
+
 
 
 
@@ -213,24 +216,9 @@ namespace TestTask
 
 
 
+        #endregion Private Methods
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        #region Блоки исходной реализации
 
         // На всякий случай не стал удалять исходную реализацию.
 
@@ -243,13 +231,11 @@ namespace TestTask
         //private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         //{
         //    stream.ResetPositionToStart();
-
         //    while (!stream.IsEndOfFile)
         //    {
         //        char c = stream.ReadNextChar();
         //        // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
         //    }
-
         //    throw new NotImplementedException();
         //}
 
@@ -268,10 +254,10 @@ namespace TestTask
         //        char c = stream.ReadNextChar();
         //        // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
         //    }
-
         //    //return ???;
-
         //    throw new NotImplementedException();
         //}
+
+        #endregion Блоки исходной реализации.
     }
 }
