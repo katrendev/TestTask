@@ -32,20 +32,20 @@ namespace TestTask
                 //Выполнение первой задачи приложения.
                 using (IReadOnlyStream singleCharInputStream = statisticService.GetInputStream(secondTestFilePath))
                 {
-                    IList<LetterStats> singleLetterStats =
-                        statisticService.GetSymbolStatistic(singleCharInputStream, statisticService.FillSingleLetterStats);
+                    IList<LetterStats> singleLetterStats = statisticService.GetSingleSymbolStatistic(singleCharInputStream);
 
                     statisticService.RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+
                     statisticService.PrintStatistic(singleLetterStats, 1);
                 }
 
                 //Выполнение второй задачи приложения.
                 using (IReadOnlyStream doubleCharInputStream = statisticService.GetInputStream(firstTestFilePath))
                 {
-                    IList<LetterStats> doubleLetterStats =
-                        statisticService.GetSymbolStatistic(doubleCharInputStream, statisticService.FillDoubleLetterStats);
+                    IList<LetterStats> doubleLetterStats = statisticService.GetDoubleSymbolStatistic(doubleCharInputStream);
 
                     statisticService.RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+
                     statisticService.PrintStatistic(doubleLetterStats, 2);
                 }
             }
