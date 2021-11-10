@@ -18,7 +18,16 @@ namespace TestTask
             IsEof = true;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            //
+            try
+            {
+                _localStream = File.Open(fileFullPath, FileMode.Open);
+            }
+            catch
+            {
+                Console.WriteLine("Не удалось открыть файл");
+                _localStream = null;
+            }
         }
                 
         /// <summary>
