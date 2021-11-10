@@ -1,12 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
-
+        private StreamReader _localStream;
+        private bool disposed = false;
+        private bool _IsEof = false;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,19 +17,38 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            try
+            {
+                _localStream = new StreamReader(fileFullPath, Encoding.UTF8);
+            }
+
+            catch (Exception e)
+            {
+                System.Console.WriteLine("Не удалось открыть файл! Возникла ошибка: {0}" + e.ToString());
+            }
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
         }
-                
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                return _IsEof;
+            }// TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            private set
+            {
+                if (_localStream.EndOfStream)
+                {
+                    _IsEof = true;
+                }
+                else
+                {
+                    _IsEof = value;
+                }
+            }
         }
 
         /// <summary>
@@ -36,10 +57,28 @@ namespace TestTask
         /// должен бросать соответствующее исключение
         /// </summary>
         /// <returns>Считанный символ.</returns>
+        /// 
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            try
+            {
+                int nextChar = _localStream.Read();
+                if (nextChar > 0)
+                {
+                    return (char)nextChar;
+                }
+                else
+                {
+                    _IsEof = true;
+                    Dispose();
+                    throw new EndOfStreamException();
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+
+            }
         }
 
         /// <summary>
@@ -47,14 +86,30 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            _localStream.BaseStream.Position = 0;
+        }
 
-            _localStream.Position = 0;
-            IsEof = false;
+        public void Dispose()
+        {
+            DisposeStream();
+        }
+        public void DisposeStream()
+        {
+            _localStream.Close();
+            disposed = true;
+        }
+
+        public string ReadToEnd()
+        {
+            return _localStream.ReadToEnd();
+        }
+
+        ~ReadOnlyStream()
+        {
+            if (!disposed)
+            {
+                Dispose();
+            }
         }
     }
 }

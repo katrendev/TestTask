@@ -14,5 +14,11 @@
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
+
+        public LetterStats(string _Letter, int _Count)
+        {
+            Letter = _Letter;
+            Count = _Count;
+        }
     }
 }

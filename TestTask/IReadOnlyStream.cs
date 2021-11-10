@@ -11,6 +11,11 @@
 
         void ResetPositionToStart();
 
+        void Dispose();
+
+        string ReadToEnd();
+
         bool IsEof { get; }
+
     }
 }
