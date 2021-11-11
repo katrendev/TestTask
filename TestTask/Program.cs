@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace TestTask
 {
@@ -22,13 +23,16 @@ namespace TestTask
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
             IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            // TODO : Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            //
+            Console.ReadKey();
+            //
         }
 
         /// <summary>
@@ -50,15 +54,33 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            List<LetterStats> singleLetterStats = new List<LetterStats>();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                //
+                string symbol = c.ToString();
+                Regex alphabet = new Regex(@"[а-яА-Я]");
+             
+                if (alphabet.IsMatch(symbol))
+                {
+                    int index = singleLetterStats.FindIndex((item) => item.Letter == symbol);
+                    if (index != -1)
+                    {
+                        IncStatistic(singleLetterStats, index);
+                        Console.WriteLine(singleLetterStats[index].Letter + singleLetterStats[index].Count);
+                    } 
+                    else
+                    {
+                        singleLetterStats.Add(new LetterStats { Letter = symbol, Count = 1 });
+                    }
+                }
+            //
             }
-
             //return ???;
 
-            throw new NotImplementedException();
+            return singleLetterStats;
         }
 
         /// <summary>
@@ -71,15 +93,31 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            List<LetterStats> doubleLetterStats = new List<LetterStats>();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                //
+                string symbol = c.ToString().ToUpper();
+                Regex alphabet = new Regex(@"[А-Я]");
+                if (alphabet.IsMatch(symbol))
+                {
+                    string pair = symbol.Insert(1, symbol.ToLower());
+                    int index = doubleLetterStats.FindIndex((item) => item.Letter == pair);
+                    if (index != -1)
+                    {
+                        IncStatistic(doubleLetterStats, index);
+                    }
+                    else
+                    {
+                        doubleLetterStats.Add(new LetterStats { Letter = pair, Count = 1 });
+                    }
+                }
+                //
             }
-
             //return ???;
-
-            throw new NotImplementedException();
+            return doubleLetterStats;
         }
 
         /// <summary>
@@ -112,16 +150,27 @@ namespace TestTask
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            //
+            int totalSum = 0;
+            foreach (LetterStats ls in letters)
+            {
+                totalSum += ls.Count;
+                Console.WriteLine(ls.Letter + " : " + ls.Count);
+            }
+
+            //
         }
 
         /// <summary>
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        private static void IncStatistic(List<LetterStats> letterStats, int index)
         {
-            letterStats.Count++;
+            int tempCount = letterStats[index].Count;
+            string tempLetter = letterStats[index].Letter;
+            letterStats.RemoveAt(index);
+            letterStats.Add(new LetterStats { Letter = tempLetter, Count = ++tempCount }); 
         }
 
 
