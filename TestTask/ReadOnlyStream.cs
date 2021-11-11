@@ -49,16 +49,20 @@ namespace TestTask
         {
             // TODO : Необходимо считать очередной символ из _localStream
             //
-            int nextCharCode = _localStream.ReadByte();
-            char nextChar = Convert.ToChar(nextCharCode);
+            byte[] bytes = new byte[2];
+            _localStream.Read(bytes, 0, 2);
+            char[] nextChar = new char[1];
+            System.Text.Encoding.Unicode.GetChars(bytes, 0, 2, nextChar, 0);
             Console.WriteLine(nextChar);
             UpdateIsEof();
-            return nextChar;
+            return nextChar[0];
         }
 
-        private void UpdateIsEof() =>        
+        private void UpdateIsEof() =>
+        
             IsEof = _localStream.Length == _localStream.Position;
-            //        
+            //
+        
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
