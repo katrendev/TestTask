@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace TestTask
 {
@@ -78,8 +79,6 @@ namespace TestTask
                 }
             //
             }
-            //return ???;
-
             return singleLetterStats;
         }
 
@@ -116,7 +115,6 @@ namespace TestTask
                 }
                 //
             }
-            //return ???;
             return doubleLetterStats;
         }
 
@@ -147,17 +145,18 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        private static void PrintStatistic(IList<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
             //
+            var orderedLetters = letters.OfType<LetterStats>().OrderBy(x => x.Letter).ToList();
             int totalSum = 0;
-            foreach (LetterStats ls in letters)
+            foreach (LetterStats ls in orderedLetters)
             {
                 totalSum += ls.Count;
                 Console.WriteLine(ls.Letter + " : " + ls.Count);
             }
-
+            Console.WriteLine("ИТОГО : " + totalSum);
             //
         }
 
