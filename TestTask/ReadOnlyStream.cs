@@ -29,13 +29,13 @@ namespace TestTask
                 _localStream = null;
             }
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;// TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
             private set;
         }
 
@@ -48,8 +48,17 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            //
+            int nextCharCode = _localStream.ReadByte();
+            char nextChar = Convert.ToChar(nextCharCode);
+            Console.WriteLine(nextChar);
+            UpdateIsEof();
+            return nextChar;
         }
+
+        private void UpdateIsEof() =>        
+            IsEof = _localStream.Length == _localStream.Position;
+            //        
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
