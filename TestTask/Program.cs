@@ -20,12 +20,12 @@ namespace TestTask
         {
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            // было IList???
+            List<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
+            List<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
-
-            //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Consonant);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
@@ -52,7 +52,7 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
+        private static List<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
             List<LetterStats> singleLetterStats = new List<LetterStats>();
@@ -69,8 +69,7 @@ namespace TestTask
                     int index = singleLetterStats.FindIndex((item) => item.Letter == symbol);
                     if (index != -1)
                     {
-                        IncStatistic(singleLetterStats, index);
-                        Console.WriteLine(singleLetterStats[index].Letter + singleLetterStats[index].Count);
+                        IncStatistic(singleLetterStats, index);                     
                     } 
                     else
                     {
@@ -89,7 +88,7 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static List<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
             List<LetterStats> doubleLetterStats = new List<LetterStats>();
@@ -125,17 +124,30 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        
+        private static void RemoveCharStatsByType(List<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
+            Regex chosenRegex = ChooseRegex();
+            while (CharExist(chosenRegex, out int index))
+                letters.RemoveAt(index);
+
+            Regex ChooseRegex()
             {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
+                switch (charType)
+                {
+                    case CharType.Consonant:
+                        return new Regex(@"[БбВвГгДдЖжЗзЙйКкЛлМмНнПпРрСсТтФфХчЦцЧчШшЩщ]");
+                    default:
+                        return new Regex(@"[АаОоУуЫыЭэЯяЮюИиЕе]");
+                }
             }
+
+            bool CharExist(Regex charRegex, out int index) =>            
+                 FindCharTypeIndex(charRegex, out index) != -1;
             
+            int FindCharTypeIndex(Regex charRegex, out int index) =>            
+                 (index = letters.FindIndex((_item) => charRegex.IsMatch(_item.Letter)));            
         }
 
         /// <summary>
