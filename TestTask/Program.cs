@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
@@ -25,6 +26,8 @@ namespace TestTask
         {
             try
             {
+                FilesCreator();
+
                 using (IReadOnlyStream inputStream1 = GetInputStream("11.txt"))
                 {
                     IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
@@ -47,6 +50,23 @@ namespace TestTask
             }
 
             Console.ReadKey();
+        }
+
+        private static void FilesCreator()
+        {
+            var file1 = File.Create($"{Environment.CurrentDirectory}/11.txt");
+
+            StreamWriter writer1 = new StreamWriter(file1,Encoding.UTF8);
+            writer1.WriteLine("AAAAAAdfgskgsjgspepVSDJGPBMSEOPGEJEGJjsgpsegjEGSBXBXXAAFAEGSGmjjgdfAFABASfsdgssgkp");
+            writer1.Close();
+            file1.Close();
+
+            var file2 = File.Create($"{Environment.CurrentDirectory}/12.txt");
+
+            StreamWriter writer2 = new StreamWriter(file2, Encoding.UTF8);
+            writer2.WriteLine("AADDSSQQwwzzbbhdhhdjAAZZghhAFAFGsgjjdgdfojAFADFAsdggfsASFFGdhkphd");
+            writer2.Close();
+            file2.Close();
         }
 
         /// <summary>
