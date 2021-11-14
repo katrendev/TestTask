@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
-
+        private event Action EndOfFile;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -16,9 +17,8 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
+            EndOfFile += CloseStream;
             // TODO : Заменить на создание реального стрима для чтения файла!
-            //
             try
             {
                 _localStream = File.Open(fileFullPath, FileMode.Open);
@@ -39,6 +39,7 @@ namespace TestTask
             private set;
         }
 
+       
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
         /// Если произведена попытка прочитать символ после достижения конца файла, метод 
@@ -48,22 +49,20 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            //
             byte[] bytes = new byte[2];
             _localStream.Read(bytes, 0, 2);
             char[] nextChar = new char[1];
-            System.Text.Encoding.Unicode.GetChars(bytes, 0, 2, nextChar, 0);
-            Console.WriteLine(nextChar);
+            Encoding.Unicode.GetChars(bytes, 0, 2, nextChar, 0);
             UpdateIsEof();
             return nextChar[0];
         }
 
-        private void UpdateIsEof() =>
-        
+        private void UpdateIsEof()
+        {
             IsEof = _localStream.Length == _localStream.Position;
-            //
-        
-
+            if (IsEof == true)
+                EndOfFile?.Invoke();
+        }
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
@@ -76,7 +75,11 @@ namespace TestTask
             }
 
             _localStream.Position = 0;
-            IsEof = false;
+            UpdateIsEof();
+        }
+        private void CloseStream()
+        {
+            _localStream.Close();
         }
     }
 }

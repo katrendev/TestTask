@@ -7,6 +7,7 @@ namespace TestTask
 {
     public class Program
     {
+        static Regex alphabet = new Regex(@"[а-яА-Я]");
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -20,7 +21,7 @@ namespace TestTask
         {
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
-            // было IList???
+            
             List<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
             List<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
@@ -31,9 +32,7 @@ namespace TestTask
             PrintStatistic(doubleLetterStats);
 
             // TODO : Необходимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
-            //
             Console.ReadKey();
-            //
         }
 
         /// <summary>
@@ -60,24 +59,10 @@ namespace TestTask
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
-                //
                 string symbol = c.ToString();
-                Regex alphabet = new Regex(@"[а-яА-Я]");
-             
-                if (alphabet.IsMatch(symbol))
-                {
-                    int index = singleLetterStats.FindIndex((item) => item.Letter == symbol);
-                    if (index != -1)
-                    {
-                        IncStatistic(singleLetterStats, index);                     
-                    } 
-                    else
-                    {
-                        singleLetterStats.Add(new LetterStats { Letter = symbol, Count = 1 });
-                    }
-                }
-            //
+                ProcessALetter(singleLetterStats, symbol);
             }
+
             return singleLetterStats;
         }
 
@@ -96,25 +81,29 @@ namespace TestTask
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
-                //
                 string symbol = c.ToString().ToUpper();
-                Regex alphabet = new Regex(@"[А-Я]");
-                if (alphabet.IsMatch(symbol))
-                {
-                    string pair = symbol.Insert(1, symbol.ToLower());
-                    int index = doubleLetterStats.FindIndex((item) => item.Letter == pair);
-                    if (index != -1)
-                    {
-                        IncStatistic(doubleLetterStats, index);
-                    }
-                    else
-                    {
-                        doubleLetterStats.Add(new LetterStats { Letter = pair, Count = 1 });
-                    }
-                }
-                //
+                string pair = symbol.Insert(1, symbol.ToLower());
+                ProcessALetter(doubleLetterStats, pair);
             }
             return doubleLetterStats;
+
+            
+        }
+        static void ProcessALetter(List<LetterStats> letterStats, string c)
+        {
+            if (Program.alphabet.IsMatch(c))
+            {
+                int index = letterStats.FindIndex((item) => item.Letter == c);
+
+                if (index != -1)
+                {
+                    IncStatistic(letterStats, index);
+                }
+                else
+                {
+                    letterStats.Add(new LetterStats { Letter = c, Count = 1 });
+                }
+            }
         }
 
         /// <summary>
@@ -124,12 +113,12 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        
+
         private static void RemoveCharStatsByType(List<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
             Regex chosenRegex = ChooseRegex();
-            while (CharExist(chosenRegex, out int index))
+            while (CharIsPresentInStats(chosenRegex, out int index))
                 letters.RemoveAt(index);
 
             Regex ChooseRegex()
@@ -143,7 +132,7 @@ namespace TestTask
                 }
             }
 
-            bool CharExist(Regex charRegex, out int index) =>            
+            bool CharIsPresentInStats(Regex charRegex, out int index) =>            
                  FindCharTypeIndex(charRegex, out index) != -1;
             
             int FindCharTypeIndex(Regex charRegex, out int index) =>            
@@ -160,8 +149,9 @@ namespace TestTask
         private static void PrintStatistic(IList<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            //
-            var orderedLetters = letters.OfType<LetterStats>().OrderBy(x => x.Letter).ToList();
+            var orderedLetters = letters.OfType<LetterStats>()
+                .OrderBy(x => x.Letter)
+                .ToList();
             int totalSum = 0;
             foreach (LetterStats ls in orderedLetters)
             {
@@ -169,7 +159,6 @@ namespace TestTask
                 Console.WriteLine(ls.Letter + " : " + ls.Count);
             }
             Console.WriteLine("ИТОГО : " + totalSum);
-            //
         }
 
         /// <summary>
@@ -180,10 +169,9 @@ namespace TestTask
         {
             int tempCount = letterStats[index].Count;
             string tempLetter = letterStats[index].Letter;
+
             letterStats.RemoveAt(index);
             letterStats.Add(new LetterStats { Letter = tempLetter, Count = ++tempCount }); 
         }
-
-
     }
 }
