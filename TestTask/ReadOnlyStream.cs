@@ -1,11 +1,12 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+        private StreamReader _reader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,19 +16,33 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            if (File.Exists(fileFullPath))
+            {
+                _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+                _reader = new StreamReader(_localStream, Encoding.GetEncoding(65001));
+                IsEof = false;
+            }
+            else
+            {
+                throw new FileNotFoundException(MessageHelper.FileNotFoundMessage);
+            }
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
+            // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
             private set;
+        }
+
+        public void Dispose()
+        {
+            _localStream.Dispose();
+            _reader.Dispose();
         }
 
         /// <summary>
@@ -39,7 +54,16 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_reader.Peek() != -1)
+            {
+                return (char)_reader.Read();
+            }
+            else
+            {
+                IsEof = true;
+                Dispose();
+                throw new EndOfStreamException("Достигнут конец файла");
+            }
         }
 
         /// <summary>

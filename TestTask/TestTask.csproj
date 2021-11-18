@@ -45,6 +45,7 @@
     <Compile Include="CharType.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
+    <Compile Include="MessageHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOnlyStream.cs" />
