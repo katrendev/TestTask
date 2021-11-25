@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private FileStream _localStream;
+        private StreamReader reader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +16,9 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
+            _localStream = new FileStream(fileFullPath, FileMode.Open);
+            reader = new StreamReader(_localStream);
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
         }
                 
         /// <summary>
@@ -38,8 +38,20 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
+            if (IsEof != true || reader.Peek() != -1)
+            {
+                char symbol = (char)reader.Read();
+                if (reader.Peek() == -1)
+                {
+                    IsEof = true;
+                    reader.Close();
+                    _localStream.Close();
+                }
+                return symbol;
+            }
+
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            throw new NotImplementedException("Файл дошел до конца.");
         }
 
         /// <summary>
