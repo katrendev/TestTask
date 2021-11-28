@@ -1,4 +1,5 @@
-﻿namespace TestTask
+﻿
+namespace TestTask
 {
     /// <summary>
     /// Интерфейс для работы с файлом в сильно урезаном виде.
@@ -6,10 +7,13 @@
     /// </summary>
     internal interface IReadOnlyStream
     {
-        // TODO : Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
         char ReadNextChar();
 
+
         void ResetPositionToStart();
+
+        void CloseFile();
+
 
         bool IsEof { get; }
     }

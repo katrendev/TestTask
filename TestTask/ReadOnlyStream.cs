@@ -5,8 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
-
+        private StreamReader _localStream;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,19 +14,20 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            IsEof = false;
+            _localStream = new StreamReader(fileFullPath);
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
+
         }
 
         /// <summary>
@@ -38,8 +38,25 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            char symb;
+            if (IsEof == false)
+            {
+                if (_localStream.EndOfStream)
+                {
+                    IsEof = true;
+                    symb = '~';
+                    CloseFile();
+                    return symb;
+                }
+                else
+                {
+                    return (char)_localStream.Read();
+                }
+            }
+            else
+            {
+                throw new ArgumentException("попытка прочитать символ после достижения конца файла");
+            }
         }
 
         /// <summary>
@@ -47,14 +64,14 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
 
-            _localStream.Position = 0;
+            _localStream.BaseStream.Position = 0;
             IsEof = false;
+
+        }
+        public void CloseFile()
+        {
+            _localStream.Dispose();
         }
     }
 }
