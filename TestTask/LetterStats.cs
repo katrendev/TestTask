@@ -5,6 +5,11 @@
     /// </summary>
     public struct LetterStats
     {
+        public LetterStats(string letter, int count)
+        {
+            Letter = letter;
+            Count = count;
+        }
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
         /// </summary>
