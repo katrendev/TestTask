@@ -46,7 +46,7 @@ namespace TestTask.Tests.Io
             using (var stream = new ReadOnlyStream(new MemoryStream(Encoding.UTF8.GetBytes(testData))))
             {
                 var count = 5;
-                while (stream.IsEof)
+                while (!stream.IsEof)
                 {
                     chars.Add(stream.ReadNextChar());
                     count -= 1;
@@ -107,7 +107,7 @@ namespace TestTask.Tests.Io
         private static string ReadFully(IReadOnlyStream stream)
         {
             var builder = new StringBuilder();
-            while (stream.IsEof)
+            while (!stream.IsEof)
             {
                 builder.Append(stream.ReadNextChar());
             }

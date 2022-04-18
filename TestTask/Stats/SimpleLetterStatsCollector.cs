@@ -5,12 +5,15 @@ namespace TestTask.Stats
     /// </summary>
     public class SimpleLetterStatsCollector : LetterStatsCollector
     {
-        public static readonly LetterStatsCollector Instance = new LetterStatsCollector();
-        
+        public static readonly SimpleLetterStatsCollector Instance = new SimpleLetterStatsCollector();
+
         private SimpleLetterStatsCollector()
         {
         }
-        
-        protected override bool IsCharAllowed(char ch) => char.IsLetter(ch);
+
+        protected override bool IsCharAllowed(char ch)
+        {
+            return char.IsLetter(ch);
+        }
     }
 }

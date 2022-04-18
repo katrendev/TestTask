@@ -38,7 +38,7 @@ namespace TestTask.Io
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof => _isDisposed || _streamReader.Peek() != -1;
+        public bool IsEof => _isDisposed || _streamReader.Peek() == -1;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.

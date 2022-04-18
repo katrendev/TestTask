@@ -3,7 +3,7 @@
     /// <summary>
     /// Статистика вхождения буквы/пары букв
     /// </summary>
-    public struct LetterStatItem
+    public class LetterStatItem
     {
         /// <summary>
         /// Буква для учёта статистики.

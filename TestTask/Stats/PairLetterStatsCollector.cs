@@ -5,7 +5,7 @@ using TestTask.Util;
 namespace TestTask.Stats
 {
     /// <summary>
-    /// Класс сборщика статистики вхождения букв в поток (регистрозависимо)
+    /// Класс сборщика статистики вхождения парных букв в поток (регистроНЕзависимо)
     /// </summary>
     public class PairLetterStatsCollector : LetterStatsCollector
     {
