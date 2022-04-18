@@ -38,7 +38,7 @@ namespace TestTask.Io
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof => !_isDisposed && _streamReader.Peek() != -1;
+        public bool IsEof => _isDisposed || _streamReader.Peek() != -1;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -61,13 +61,10 @@ namespace TestTask.Io
         public void ResetPositionToStart()
         {
             CheckDisposed();
-            if (_streamReader == null)
-            {
-                if (_localStream.CanSeek)
-                    _localStream.Seek(0, SeekOrigin.Begin);
-                else
-                    throw new NotSupportedException("Inner stream does not support seek");
-            }
+            if (_localStream.CanSeek)
+                _localStream.Seek(0, SeekOrigin.Begin);
+            else
+                throw new NotSupportedException("Inner stream does not support seek");
             // У ридера нет возможности seek'ать, поэтому просто заменяем его на новый,
             // а старый ридер НЕ диспозим, т.к. он прикроет основной стрим, а также в нём нет неуправляемых ресурсов
             InitReader();
@@ -75,6 +72,8 @@ namespace TestTask.Io
 
         public void Dispose()
         {
+            if (_isDisposed)
+                return;
             _isDisposed = true;
             _localStream?.Dispose();
         }

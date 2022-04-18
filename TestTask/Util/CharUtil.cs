@@ -22,10 +22,11 @@ namespace TestTask.Util
 
         public static bool Matches(this CharType charType, char ch)
         {
+            var upperChar = char.ToUpperInvariant(ch);
             switch (charType)
             {
-                case CharType.Vowel: return Vowels.Contains(ch);
-                case CharType.Consonant: return Consonants.Contains(ch);
+                case CharType.Vowel: return Vowels.Contains(upperChar);
+                case CharType.Consonant: return Consonants.Contains(upperChar);
                 default: throw new ArgumentOutOfRangeException(nameof(charType), charType, null);
             }
         }
