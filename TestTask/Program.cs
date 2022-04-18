@@ -70,6 +70,8 @@ namespace TestTask
 
         /// <summary>
         /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
+        /// Для упрощения предположим, что входные файлы в кодировке UTF-8, дефолтной для ReadOnlyStream,
+        /// хотя у него и предусмотрена возможность кастомизации
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         /// <returns>Поток для последующего чтения.</returns>
@@ -87,7 +89,7 @@ namespace TestTask
         private static IList<LetterStatItem> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            return LetterStatsCollector.Instance.Collect(stream);
+            return SimpleLetterStatsCollector.Instance.Collect(stream);
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace TestTask
         private static IList<LetterStatItem> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            return LetterStatsCollectorPairs.Instance.Collect(stream);
+            return PairLetterStatsCollector.Instance.Collect(stream);
         }
 
         /// <summary>

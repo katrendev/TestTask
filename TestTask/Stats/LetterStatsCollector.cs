@@ -9,8 +9,6 @@ namespace TestTask.Stats
     /// </summary>
     public class LetterStatsCollector
     {
-        public static readonly LetterStatsCollector Instance = new LetterStatsCollector();
-
         /// <summary>
         /// Собирает статистику вхождения разрешённых символов в поток
         /// </summary>
@@ -30,7 +28,7 @@ namespace TestTask.Stats
                 var chKey = NormalizeChar(ch);
 
                 if (resultDict.TryGetValue(chKey, out var item))
-                    IncStatistic(item, ch);
+                    IncStatistic(item);
                 else
                     resultDict.Add(chKey, new LetterStatItem {Letter = chKey, Count = 1});
             }
@@ -41,7 +39,7 @@ namespace TestTask.Stats
         /// <summary>
         /// Определяет, должен ли указанный символ попасть в статистику
         /// </summary>
-        protected virtual bool IsCharAllowed(char ch) => char.IsLetter(ch);
+        protected virtual bool IsCharAllowed(char ch) => true;
 
         /// <summary>
         /// Нормализует указанный символ (нужно для объединения парных букв в группы)
@@ -52,8 +50,7 @@ namespace TestTask.Stats
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStatItem">Элемент статистики</param>
-        /// <param name="ch">Свежедобавленный символ</param>
-        private static void IncStatistic(LetterStatItem letterStatItem, char ch)
+        private static void IncStatistic(LetterStatItem letterStatItem)
         {
             letterStatItem.Count++;
         }

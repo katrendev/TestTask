@@ -5,11 +5,15 @@ using TestTask.Util;
 namespace TestTask.Stats
 {
     /// <summary>
-    /// Класс для анализа вхождений символа в поток
+    /// Класс сборщика статистики вхождения букв в поток (регистрозависимо)
     /// </summary>
-    public class LetterStatsCollectorPairs : LetterStatsCollector
+    public class PairLetterStatsCollector : LetterStatsCollector
     {
-        public new static readonly LetterStatsCollectorPairs Instance = new LetterStatsCollectorPairs();
+        public static readonly PairLetterStatsCollector Instance = new PairLetterStatsCollector();
+
+        private PairLetterStatsCollector()
+        {
+        }
 
         private static readonly ISet<char> AllowedLetters = CharUtil.CyrillicLettersWithAnalogs
             .Concat(CharUtil.LatinLettersWithAnalogs)
