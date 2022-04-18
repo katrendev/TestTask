@@ -38,7 +38,7 @@ namespace TestTask.Io
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof => _isDisposed || _streamReader.Peek() == -1;
+        public bool IsEof => _isDisposed || _streamReader.EndOfStream;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -65,8 +65,9 @@ namespace TestTask.Io
                 _localStream.Seek(0, SeekOrigin.Begin);
             else
                 throw new NotSupportedException("Inner stream does not support seek");
-            // У ридера нет возможности seek'ать, поэтому просто заменяем его на новый,
-            // а старый ридер НЕ диспозим, т.к. он прикроет основной стрим, а также в нём нет неуправляемых ресурсов
+            // У ридера нет возможности seek'ать, поэтому просто заменяем его на новый.
+            // Старый ридер использовать больше нельзя из-за его буфера, который хранит значения ДО перемотки стрима.
+            // Также старый ридер специально НЕ диспозится, т.к. иначе он прикроет основной стрим
             InitReader();
         }
 
