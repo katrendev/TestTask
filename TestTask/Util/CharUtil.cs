@@ -9,8 +9,8 @@ namespace TestTask.Util
         public const string CyrillicLettersWithAnalogs = "АВСЕНКМОРТХУавсенкмортху";
         public const string LatinLettersWithAnalogs = "ABCEHKMOPTXYabcehkmoptxy";
 
-        private const string Vowels = "AEIOUYАЕЁИОУЫЭЮЯ";
-        private const string Consonants = "BCDFGHJKLMNPQRSTVWXZБВГДЖЗЙКЛМНПРСТФХЦЧШЩЪЬ";
+        private static readonly ISet<char> Vowels = "AEIOUYАЕЁИОУЫЭЮЯ".ToHashSet();
+        private static readonly ISet<char> Consonants = "BCDFGHJKLMNPQRSTVWXZБВГДЖЗЙКЛМНПРСТФХЦЧШЩЪЬ".ToHashSet();
 
         private static readonly IDictionary<char, char> DicCyrillicToLatinLetters =
             CyrillicLettersWithAnalogs

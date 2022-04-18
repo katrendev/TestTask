@@ -37,6 +37,17 @@ namespace TestTask.Tests.Io
 
             Assert.AreEqual(testData, result);
         }
+        
+        [Test]
+        public void TestThrowsEofIfTryingToReadEmpty()
+        {
+            const string testData = "Some string";
+            using (var stream = new ReadOnlyStream(new MemoryStream(Encoding.UTF8.GetBytes(testData))))
+            {
+                ReadFully(stream);
+                Assert.Throws<EndOfStreamException>(() => stream.ReadNextChar());
+            }
+        }
 
         [Test]
         public void TestStreamRewind()

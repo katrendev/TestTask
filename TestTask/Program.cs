@@ -140,7 +140,7 @@ namespace TestTask
                 // не всегда можно итерировать больше одного раза, поэтому обезопасим себя таким образом
             }
 
-            Console.WriteLine($"ИТОГО : {total}");
+            Console.WriteLine($"ИТОГО : {total}\n");
         }
     }
 }

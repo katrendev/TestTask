@@ -53,5 +53,9 @@
     <Compile Include="Util\CharType.cs" />
     <Compile Include="Util\CharUtil.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="README.md" />
+    <Content Include="sample.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
