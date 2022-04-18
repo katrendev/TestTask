@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace TestTask
+namespace TestTask.Io
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
@@ -68,6 +68,8 @@ namespace TestTask
                 else
                     throw new NotSupportedException("Inner stream does not support seek");
             }
+            // У ридера нет возможности seek'ать, поэтому просто заменяем его на новый,
+            // а старый ридер НЕ диспозим, т.к. он прикроет основной стрим, а также в нём нет неуправляемых ресурсов
             InitReader();
         }
 
@@ -85,7 +87,7 @@ namespace TestTask
         private void CheckDisposed()
         {
             if (_isDisposed)
-                throw new ObjectDisposedException("Inner stream is disposed");
+                throw new ObjectDisposedException("Stream reader was disposed");
         }
     }
 }

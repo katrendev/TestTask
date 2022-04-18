@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TestTask.Io;
+using TestTask.Stats;
+using TestTask.Util;
 
 namespace TestTask
 {
     public class Program
     {
-
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
@@ -16,19 +20,52 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Использовать так: TestTask.exe <first_file_name> <second_file_name>");
+                return;
+            }
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            IList<LetterStatItem> singleLetterStats;
+            IList<LetterStatItem> doubleLetterStats;
+
+            try
+            {
+                using (var stream = GetInputStream(args[0]))
+                {
+                    singleLetterStats = FillSingleLetterStats(stream);
+                }
+
+                using (var stream = GetInputStream(args[1]))
+                {
+                    doubleLetterStats = FillDoubleLetterStats(stream);
+                }
+            }
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine(e.Message);
+                return;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Console.WriteLine(e.Message);
+                return;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Неожиданная ошибка: {e.Message}");
+                return;
+            }
 
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Consonant);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.Write("Нажмите любую кнопку для продолжения...");
+            Console.ReadKey();
+            Console.WriteLine();
         }
 
         /// <summary>
@@ -47,18 +84,10 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
+        private static IList<LetterStatItem> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            while (!stream.IsEof)
-            {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
-            }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return LetterStatsCollector.Instance.Collect(stream);
         }
 
         /// <summary>
@@ -68,18 +97,10 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static IList<LetterStatItem> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            while (!stream.IsEof)
-            {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
-            }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return LetterStatsCollectorPairs.Instance.Collect(stream);
         }
 
         /// <summary>
@@ -89,17 +110,14 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(IList<LetterStatItem> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
-            {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
-            }
-            
+            var toRemove = letters
+                .Where(item => charType.Matches(item.Letter))
+                .ToList();
+
+            foreach (var item in toRemove)
+                letters.Remove(item);
         }
 
         /// <summary>
@@ -109,21 +127,18 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        private static void PrintStatistic(IEnumerable<LetterStatItem> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            var total = 0;
+            foreach (var item in letters.OrderBy(item => item.Letter))
+            {
+                Console.WriteLine($"{item.Letter} : {item.Count}");
+                total += item.Count;
+                // Сумму можно было бы посчитать через letters.Sum(item => item.Count), но IEnumerable
+                // не всегда можно итерировать больше одного раза, поэтому обезопасим себя таким образом
+            }
+
+            Console.WriteLine($"ИТОГО : {total}");
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }

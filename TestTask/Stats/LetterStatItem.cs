@@ -1,4 +1,4 @@
-﻿namespace TestTask
+﻿namespace TestTask.Stats
 {
     /// <summary>
     /// Статистика вхождения буквы/пары букв
@@ -6,9 +6,9 @@
     public struct LetterStatItem
     {
         /// <summary>
-        /// Буква/Пара букв для учёта статистики.
+        /// Буква для учёта статистики.
         /// </summary>
-        public string Letter;
+        public char Letter;
 
         /// <summary>
         /// Кол-во вхождений буквы/пары.

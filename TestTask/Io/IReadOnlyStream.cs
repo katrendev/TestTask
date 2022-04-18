@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestTask
+namespace TestTask.Io
 {
     /// <summary>
     /// Интерфейс для работы с файлом в сильно урезаном виде.
