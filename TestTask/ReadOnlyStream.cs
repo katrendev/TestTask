@@ -1,34 +1,44 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private static readonly Encoding DefaultEncoding = Encoding.UTF8;
+
+        private readonly Encoding _encoding;
+        private readonly Stream _localStream;
+        private StreamReader _streamReader;
+        private bool _isDisposed = false;
 
         /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+        /// Базовый конструктор ReadOnlyStream из любого абстрактного потока
+        /// </summary>
+        /// <param name="stream">Входной поток</param>
+        /// <param name="encoding">Кодировка потока</param>
+        public ReadOnlyStream(Stream stream, Encoding encoding = null)
+        {
+            _localStream = stream;
+            _encoding = encoding ?? DefaultEncoding;
+            InitReader();
+        }
+
+        /// <summary>
+        /// Конструктор ReadOnlyStream из любого файла
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        /// <param name="encoding">Кодировка файла</param>
+        public ReadOnlyStream(string fileFullPath, Encoding encoding = null)
+            : this(new FileStream(fileFullPath, FileMode.Open), encoding)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+        public bool IsEof => !_isDisposed && _streamReader.Peek() != -1;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -38,23 +48,44 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            CheckDisposed();
+            var ch = _streamReader.Read();
+            if (ch == -1) throw new EndOfStreamException();
+            return (char) ch;
         }
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
+        /// <exception cref="NotSupportedException">Если внутренний поток не поддерживает перемотку</exception>
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
+            CheckDisposed();
+            if (_streamReader == null)
             {
-                IsEof = true;
-                return;
+                if (_localStream.CanSeek)
+                    _localStream.Seek(0, SeekOrigin.Begin);
+                else
+                    throw new NotSupportedException("Inner stream does not support seek");
             }
+            InitReader();
+        }
 
-            _localStream.Position = 0;
-            IsEof = false;
+        public void Dispose()
+        {
+            _isDisposed = true;
+            _localStream?.Dispose();
+        }
+
+        private void InitReader()
+        {
+            _streamReader = new StreamReader(_localStream, _encoding);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_isDisposed)
+                throw new ObjectDisposedException("Inner stream is disposed");
         }
     }
 }
