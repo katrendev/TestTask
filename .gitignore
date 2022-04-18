@@ -15,3 +15,5 @@
 bin/
 obj/
 packages/
+
+.idea
