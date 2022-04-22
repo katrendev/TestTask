@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestTask
 {
     public class Program
     {
+        const string vowels = "аеёиоуыэюя";
+        const string consonants = "бвгджзйклмнпрстфхцчшщ";
+        private static readonly Dictionary<string, LetterStats> pairs = new Dictionary<string, LetterStats>();
+        private static readonly Dictionary<string, LetterStats> single = new Dictionary<string, LetterStats>();
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -22,11 +27,15 @@ namespace TestTask
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
             IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(ref singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(ref doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
+            Console.WriteLine(new string('-', 15));
             PrintStatistic(doubleLetterStats);
+            Console.WriteLine(new string('-', 15));
+            Console.WriteLine("Press enter to close window");
+            Console.ReadLine();
 
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
@@ -50,15 +59,21 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            while (!stream.IsEof)
+
+            using (stream)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                while (!stream.IsEof)
+                {
+                    char c = stream.ReadNextChar();
+                    if (char.IsLetter(c))
+                    {
+                        AddToDictionary(single, c.ToString());
+                    }
+                    // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return single.Select(kv => kv.Value).ToList();
         }
 
         /// <summary>
@@ -71,16 +86,25 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
-            while (!stream.IsEof)
+            char currentChar;
+            var prevChar = (char?)null;
+            using (stream)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                while (!stream.IsEof)
+                {
+                    currentChar = char.ToLower(stream.ReadNextChar());
+                    if (currentChar == prevChar)
+                    {
+                        AddToDictionary(pairs, new string(new[] { currentChar, currentChar }));
+                    }
+                    prevChar = currentChar;
+                    // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return pairs.Select(kv => kv.Value).ToList();
         }
+
 
         /// <summary>
         /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
@@ -89,17 +113,21 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(ref IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
+                    letters = letters.Where(e =>
+                    {
+                        return !consonants.Contains(char.ToLower(e.Letter.First()));
+                    }).ToList();
                     break;
                 case CharType.Vowel:
+                    letters = letters.Where(e => !vowels.Contains(char.ToLower(e.Letter.First()))).ToList();
                     break;
             }
-            
         }
 
         /// <summary>
@@ -111,17 +139,36 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
+            var sorted = letters.OrderBy(l => l.Letter);
+            foreach (var e in sorted)
+            {
+                Console.WriteLine($"\"{e.Letter}\" : \"{e.Count}\"");
+            }
+            var result = letters.Select(l => l.Count).Sum();
+            Console.WriteLine($"ИТОГО: {result}");
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        private static void IncStatistic(ref LetterStats letterStats)
         {
             letterStats.Count++;
+        }
+        private static void AddToDictionary(Dictionary<string, LetterStats> dict, string key)
+        {
+            if (dict.ContainsKey(key))
+            {
+                var a = dict[key];
+                IncStatistic(ref a);
+                dict[key] = a;
+            }
+            else
+            {
+                dict.Add(key, new LetterStats() { Letter = key, Count = 1 });
+            }
         }
 
 

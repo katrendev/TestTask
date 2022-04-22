@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+        private StreamReader _reader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +15,16 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            IsEof = false;
+
+            if (!File.Exists(fileFullPath)) 
+            {
+                throw new FileNotFoundException($"File {fileFullPath} does not exist");
+            }
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = File.OpenRead(fileFullPath);
+            _reader = new StreamReader(_localStream);
         }
                 
         /// <summary>
@@ -30,6 +36,11 @@ namespace TestTask
             private set;
         }
 
+        public void Dispose()
+        {
+            _reader.Dispose();
+        }
+
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
         /// Если произведена попытка прочитать символ после достижения конца файла, метод 
@@ -38,8 +49,19 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
+            if(IsEof)
+            {
+                throw new EndOfStreamException();
+            }
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            
+            var c = (char)_reader.Read();
+            if (_reader.Peek() == -1)
+            {
+                IsEof = true;
+            }
+            return c;
+            
         }
 
         /// <summary>
