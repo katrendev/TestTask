@@ -119,10 +119,7 @@ namespace TestTask
             switch (charType)
             {
                 case CharType.Consonants:
-                    letters = letters.Where(e =>
-                    {
-                        return !consonants.Contains(char.ToLower(e.Letter.First()));
-                    }).ToList();
+                    letters = letters.Where(e => consonants.Contains(char.ToLower(e.Letter.First()))).ToList();
                     break;
                 case CharType.Vowel:
                     letters = letters.Where(e => !vowels.Contains(char.ToLower(e.Letter.First()))).ToList();
