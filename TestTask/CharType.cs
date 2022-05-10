@@ -16,8 +16,8 @@
         Consonants,
 
         /// <summary>
-        /// Все
+        /// Пустой
         /// </summary>
-        All
+        None
     }
 }

@@ -30,11 +30,13 @@ namespace TestTask
                 doubleLetterStats = FillDoubleLetterStats(inputStream);
             }
 
-            RemoveCharStatsByType(ref singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(ref doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(singleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Vowel);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
+
+            Console.ReadKey();
 
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
@@ -99,7 +101,8 @@ namespace TestTask
                 if (rewind)
                 {
                     rewind = false;
-                } else if (Char.IsLetter(current) && Char.IsLetter(prev))
+                } 
+                else if (Char.IsLetter(current) && Char.IsLetter(prev))
                 {
                    if (current == prev)
                    {
@@ -122,18 +125,29 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(ref IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
-                    letters = letters.Where(el => !IsVowel(el.Letter)).ToList();
+                    foreach(LetterStats stat in letters.Reverse())
+                    {
+                        if (!IsVowel(stat.Letter)) {
+                            letters.Remove(stat);
+                        }
+                    }
                     break;
                 case CharType.Vowel:
-                    letters = letters.Where(el => IsVowel(el.Letter)).ToList();
+                    foreach (LetterStats stat in letters.Reverse())
+                    {
+                        if (IsVowel(stat.Letter))
+                        {
+                            letters.Remove(stat);
+                        }
+                    }
                     break;
-                case CharType.All:
+                case CharType.None:
                     return;
             }
             
@@ -149,10 +163,8 @@ namespace TestTask
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            List<LetterStats> list = letters.ToList();
-            list.Sort((a, b) => String.Compare(a.Letter, b.Letter));
             int sum = 0;
-            foreach (LetterStats el in list)
+            foreach (LetterStats el in letters.OrderBy(el => el.Letter))
             {
                 Console.WriteLine(el.Letter + " : " + el.Count);
                 sum += el.Count;
@@ -169,7 +181,6 @@ namespace TestTask
             if (stats.TryGetValue(c, out LetterStats value))
             {
                 value.Count++;
-                stats[c] = value;
             }
             else
             {
