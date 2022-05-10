@@ -14,5 +14,11 @@
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
+
+        public LetterStats(string Letter, int Count)
+        {
+            this.Letter = Letter;
+            this.Count = Count;
+        }
     }
 }

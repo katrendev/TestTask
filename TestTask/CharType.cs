@@ -13,6 +13,11 @@
         /// <summary>
         /// Согласные
         /// </summary>
-        Consonants
+        Consonants,
+
+        /// <summary>
+        /// Все
+        /// </summary>
+        All
     }
 }

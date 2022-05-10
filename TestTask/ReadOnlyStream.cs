@@ -6,6 +6,8 @@ namespace TestTask
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+        private StreamReader reader;
+        private bool disposedValue;
 
         /// <summary>
         /// Конструктор класса. 
@@ -18,9 +20,10 @@ namespace TestTask
             IsEof = true;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            reader = new StreamReader(_localStream);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
@@ -38,8 +41,14 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
+            if (IsEof)
+            {
+                throw new EndOfStreamException();
+            }
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            char c = (char) reader.Read();
+            IsEof = reader.Peek() == -1;
+            return c;
         }
 
         /// <summary>
@@ -55,6 +64,24 @@ namespace TestTask
 
             _localStream.Position = 0;
             IsEof = false;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    reader.Dispose();
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose (disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
