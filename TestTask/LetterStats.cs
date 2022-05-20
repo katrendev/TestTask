@@ -8,7 +8,7 @@
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
         /// </summary>
-        public string Letter;
+        public char Letter;
 
         /// <summary>
         /// Кол-во вхождений буквы/пары.

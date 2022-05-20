@@ -1,10 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TestTask
 {
     public class Program
     {
+        private readonly static Regex nonSpacingMarkRegex =
+            new Regex(@"\p{Mn}", RegexOptions.Compiled);
+
+        private readonly static IList<char> _cyrillicVowels = new List<char> { 'а', 'э', 'ы', 'у', 'о', 'я', 'е', 'ё', 'ю', 'и', 'A', 'Э', 'Ы', 'У', 'О', 'Я', 'Е', 'Ё', 'Ю', 'И' };
+
+        private readonly static IList<char> _latinVowels = new List<char> { 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U' };
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -17,18 +27,20 @@ namespace TestTask
         static void Main(string[] args)
         {
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
             IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            singleLetterStats = RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
-            PrintStatistic(doubleLetterStats);
+            //PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            // TODO - Done : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.WriteLine("Нажмите любую клавишу, чтобы завершить выполнение программы");
+            Console.ReadLine();
         }
 
         /// <summary>
@@ -50,15 +62,23 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+
+            var dict = new Dictionary<char, LetterStats>();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                // TODO - Done : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (Char.IsLetter(c))
+                {
+                    dict.TryGetValue(c, out LetterStats stats);
+                    if (stats.Letter == default)
+                        stats.Letter = c;
+                    IncStatistic(ref stats);
+                    dict[c] = stats;
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return dict.Select(kvp => kvp.Value).ToList();
         }
 
         /// <summary>
@@ -89,17 +109,24 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static IList<LetterStats> RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
+                    letters = letters.Where(x => !_latinVowels.Contains(x.Letter)).ToList();
                     break;
                 case CharType.Vowel:
+                    letters = letters.Where(x =>
+                    {
+                        bool r = _latinVowels.Contains(x.Letter);
+                        return r;
+                    }).ToList();
                     break;
             }
-            
+
+            return letters;
         }
 
         /// <summary>
@@ -111,19 +138,30 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            // TODO - Done : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
+            var sorted = letters.OrderBy(ls => ls.Letter);
+            foreach (var ls in sorted)
+                Console.WriteLine(string.Format("{0} : {1}", ls.Letter, ls.Count));
         }
 
         /// <summary>
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        private static void IncStatistic(ref LetterStats letterStats)
         {
             letterStats.Count++;
         }
 
+        private static string RemoveDiacritics(string text)
+        {
+            if (text == null)
+                return string.Empty;
 
+            var normalizedText =
+                text.Normalize(NormalizationForm.FormD);
+
+            return nonSpacingMarkRegex.Replace(normalizedText, string.Empty);
+        }
     }
 }
