@@ -8,6 +8,8 @@ namespace TestTask
     {
         private readonly Stream _localStream;
 
+        private readonly StreamReader _reader;
+
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -16,25 +18,20 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            // TODO: remove
-            //IsEof = true;
-
             // TODO - Done : Заменить на создание реального стрима для чтения файла!
             // Done
-            _localStream = new FileStream(fileFullPath, FileMode.Open);
+            //_localStream = new FileStream(fileFullPath, FileMode.Open);
+            var reader = new StreamReader(fileFullPath);
+            _localStream = reader.BaseStream;
+            _reader = reader;
         }
 
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         // TODO - Done : Заполнять данный флаг при достижении конца файла/стрима при чтении
-        public bool IsEof => _localStream.Position == _localStream.Length;
-        // TODO: remove
-        //public bool IsEof
-        //{
-        //    get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-        //    private set;
-        //}
+        public bool IsEof => _reader.EndOfStream;
+
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -48,7 +45,8 @@ namespace TestTask
             if (IsEof)
                 throw new EndOfStreamException("File is completely read");
 
-            return (char) _localStream.ReadByte();
+            //return (char) _localStream.ReadByte();
+            return (char) _reader.Read();
         }
 
         /// <summary>
@@ -57,15 +55,9 @@ namespace TestTask
         public void ResetPositionToStart()
         {
             if (_localStream == null)
-            {
-                // TODO: remove
-                //IsEof = true;
                 return;
-            }
 
             _localStream.Position = 0;
-            // TODO: remove
-            //IsEof = false;
         }
 
         public void Dispose()
