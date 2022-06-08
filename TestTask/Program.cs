@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TestTask.Extensions;
 
 namespace TestTask
 {
@@ -16,19 +19,47 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            try
+            {
+                string fullPath1 = GetFullPath(args[0]);
+                string fullPath2 = GetFullPath(args[1]);
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+                IList<LetterStats> singleLetterStats;
+                IList<LetterStats> doubleLetterStats;
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+                using (IReadOnlyStream inputStream1 = GetInputStream(fullPath1),
+                    inputStream2 = GetInputStream(fullPath2))
+                {
+                    singleLetterStats = FillSingleLetterStats(inputStream1);
+                    doubleLetterStats = FillDoubleLetterStats(inputStream2);
+                }
 
-            PrintStatistic(singleLetterStats);
-            PrintStatistic(doubleLetterStats);
+                RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+                RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
+                PrintStatistic(singleLetterStats);
+                PrintStatistic(doubleLetterStats);
+            
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.ReadLine();
+            }
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+        }
+
+        private static string GetFullPath(string path)
+        {
+            if (File.Exists(path))
+            {
+                return Path.GetFullPath(path);
+            }
+            else
+            {
+                throw new FileNotFoundException($"Файл не найден, путь до файла: {path}");
+            }
         }
 
         /// <summary>
@@ -49,16 +80,32 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            var result = new List<LetterStats>();
+
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
+                if (char.IsLetter(c))
+                {
+                    LetterStats letterStats = result.FirstOrDefault(x => x.Letter.Equals(c.ToString()));
+
+                    if (letterStats != null)
+                    {
+                        IncStatistic(letterStats);
+                    }
+                    else
+                    {
+                        letterStats = new LetterStats(c.ToString());
+                        IncStatistic(letterStats);
+                        result.Add(letterStats);
+                    }
+
+                }
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return result;
         }
 
         /// <summary>
@@ -70,16 +117,51 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            // С моей точки зрения из описания не совсем понятно как поступить с последовательностью в
+            // которой пара содержит лишний символ, к примеру - *АаА*
+            // Мной был выбран вариант при котором отсекается "третий лишний" и выполнение продолжается дальше
+            // В итоге при входящей последовательности АаАБб будут добалены пары (Аа : 1, Бб : 1)
+            
+            var result = new List<LetterStats>();
+            var previsionLetter = '\0';
+
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
+                if (!char.IsLetter(c))
+                {
+                    continue;
+                }
+
+                if (previsionLetter.Equals(c, true))
+                {
+                    string resultLetter = $"{previsionLetter}{c}";
+
+                    LetterStats letterStats = result.FirstOrDefault(
+                        x => x.Letter.Equals(resultLetter, StringComparison.OrdinalIgnoreCase));
+
+                    if (letterStats != null)
+                    {
+                        IncStatistic(letterStats);
+                    }
+                    else
+                    {
+                        letterStats = new LetterStats(resultLetter);
+                        IncStatistic(letterStats);
+                        result.Add(letterStats);
+                    }
+
+                    previsionLetter = '\0';
+                }
+                else
+                {
+                    previsionLetter = c;
+                }
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return result;
         }
 
         /// <summary>
@@ -95,8 +177,10 @@ namespace TestTask
             switch (charType)
             {
                 case CharType.Consonants:
+                    letters.RemoveAll(x => x.Letter.ToCharArray().IsConsonant());
                     break;
                 case CharType.Vowel:
+                    letters.RemoveAll(x => x.Letter.ToCharArray().IsVowel());
                     break;
             }
             
@@ -111,8 +195,16 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
+            letters = letters.OrderBy(x => x.Letter);
+
+            int totalLetterFound = 0;
+            foreach (var letter in letters)
+            {
+                totalLetterFound += letter.Count;
+                Console.WriteLine(letter);
+            }
+            Console.WriteLine($"Итого {totalLetterFound}");
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -121,9 +213,7 @@ namespace TestTask
         /// <param name="letterStats"></param>
         private static void IncStatistic(LetterStats letterStats)
         {
-            letterStats.Count++;
+            ++letterStats.Count;
         }
-
-
     }
 }

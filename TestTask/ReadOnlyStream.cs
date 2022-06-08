@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
+        private bool _disposed;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,12 +16,13 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            fileFullPath = fileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath);
+            IsEof = _localStream.EndOfStream;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
@@ -28,7 +30,7 @@ namespace TestTask
         {
             get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
             private set;
-        }
+        } = true;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -39,7 +41,19 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+            {
+                throw new EndOfStreamException();
+            }
+
+            char readChar = (char)_localStream.Read();
+
+            if (_localStream.EndOfStream)
+            {
+                IsEof = true;
+            }
+
+            return readChar;
         }
 
         /// <summary>
@@ -53,8 +67,35 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
-            IsEof = false;
+            _localStream.BaseStream.Position = 0;
+            _localStream.DiscardBufferedData();
+
+            IsEof = _localStream.EndOfStream;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _localStream?.Dispose();
+            }
+            _disposed = true;
+        }
+
+        ~ReadOnlyStream()
+        {
+            Dispose(false);
         }
     }
 }
