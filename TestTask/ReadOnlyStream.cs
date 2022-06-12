@@ -17,8 +17,14 @@ namespace TestTask
         {
             IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = File.OpenRead(fileFullPath);
+        }
+
+        public ReadOnlyStream(Stream stream)
+        {
+            IsEof = true;
+
+            _localStream = stream;
         }
                 
         /// <summary>
@@ -26,8 +32,19 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
+        }
+
+        public void Close()
+        {
+            _localStream.Close();
+        }
+
+        public void Dispose()
+        {
+            Close();
+            _localStream.Dispose();;
         }
 
         /// <summary>
@@ -38,8 +55,20 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+            {
+                throw new EndOfStreamException();
+            }
+
+            int symbolCode = _localStream.ReadByte();
+            if (symbolCode != -1)
+            {
+                var symbol = (char) symbolCode;
+                return symbol;
+            }
+
+            IsEof = true;
+            return '0';
         }
 
         /// <summary>
