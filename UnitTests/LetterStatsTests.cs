@@ -59,6 +59,33 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void SmallStreamSingleTestWithNoLetters()
+        {
+            MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("!A!"));
+            IList<LetterStats> exceptedLetterStatsList = new List<LetterStats>()
+            {
+                new LetterStats("A", 1)
+            };
+
+            using (IReadOnlyStream inputStream = new ReadOnlyStream(stream))
+            {
+                LetterAnalyzer analyzer = new LetterAnalyzer();
+
+                IList<LetterStats> singleLetterStats = analyzer.FillSingleLetterStats(inputStream);
+
+                Assert.AreEqual(singleLetterStats.Count, exceptedLetterStatsList.Count);
+
+                if (exceptedLetterStatsList.Count != singleLetterStats.Count)
+                    return;
+
+                for (int i = 0; i < exceptedLetterStatsList.Count; i++)
+                {
+                    AssertEqual(exceptedLetterStatsList[i], singleLetterStats[i]);
+                }
+            }
+        }
+
+        [TestMethod]
         public void BigStreamSingleTest()
         {
             MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("AaBaABC"));
@@ -193,6 +220,34 @@ namespace UnitTests
         public void BigStreamDoubleTestWithPairs()
         {
             MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("bAacWwwEAAbcB"));
+            IList<LetterStats> exceptedLetterStatsList = new List<LetterStats>()
+            {
+                new LetterStats("AA", 2),
+                new LetterStats("WW", 1)
+            };
+
+            using (IReadOnlyStream inputStream = new ReadOnlyStream(stream))
+            {
+                LetterAnalyzer analyzer = new LetterAnalyzer();
+
+                IList<LetterStats> letterStats = analyzer.FillDoubleLetterStats(inputStream);
+
+                Assert.AreEqual(letterStats.Count, exceptedLetterStatsList.Count);
+
+                if (exceptedLetterStatsList.Count != letterStats.Count)
+                    return;
+
+                for (int i = 0; i < exceptedLetterStatsList.Count; i++)
+                {
+                    AssertEqual(exceptedLetterStatsList[i], letterStats[i]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void BigStreamDoubleTestWithPairsWithNoLetters()
+        {
+            MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes("!b!!Aac!WwwE!AAbcB!"));
             IList<LetterStats> exceptedLetterStatsList = new List<LetterStats>()
             {
                 new LetterStats("AA", 2),

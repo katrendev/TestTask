@@ -68,7 +68,7 @@ namespace TestTask
             }
 
             IsEof = true;
-            return '0';
+            return '\0';
         }
 
         /// <summary>

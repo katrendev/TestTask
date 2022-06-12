@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -8,6 +9,8 @@ namespace TestTask
 {
     public class Program
     {
+        const string Consonants = "[йцкнгшщзхфвпрлджчсмтьбЙЦУНГШЩЗХФВПРЛДЖЧСМИЬБqwrtpsdfghjklzxcvbnmQWERPSDFGHJKLZXCVBNM]";
+        const string Vowels = "[уеыаоэяиюУУЫАОЭЯИЮaeiouyAEIOUY]";
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -19,24 +22,31 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            if (args.Length != 2)
+            try
             {
-                throw new ArgumentNullException(nameof(args));
+                if (args.Length != 2)
+                {
+                    throw new Exception("Incorrect arguments number.");
+                }
+
+                using (IReadOnlyStream inputStream1 = GetInputStream(args[0]))
+                using (IReadOnlyStream inputStream2 = GetInputStream(args[1]))
+                {
+                    LetterAnalyzer analyzer = new LetterAnalyzer();
+
+                    IList<LetterStats> singleLetterStats = analyzer.FillSingleLetterStats(inputStream1);
+                    IList<LetterStats> doubleLetterStats = analyzer.FillDoubleLetterStats(inputStream2);
+
+                    RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+                    RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+
+                    PrintStatistic(singleLetterStats);
+                    PrintStatistic(doubleLetterStats);
+                }
             }
-
-            using (IReadOnlyStream inputStream1 = GetInputStream(args[0]))
-            using (IReadOnlyStream inputStream2 = GetInputStream(args[1]))
+            catch (Exception ex)
             {
-                LetterAnalyzer analyzer = new LetterAnalyzer();
-
-                IList<LetterStats> singleLetterStats = analyzer.FillSingleLetterStats(inputStream1);
-                IList<LetterStats> doubleLetterStats = analyzer.FillDoubleLetterStats(inputStream2);
-
-                RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-                RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
-
-                PrintStatistic(singleLetterStats);
-                PrintStatistic(doubleLetterStats);
+                Console.Write(ex.Message);
             }
 
             Console.ReadKey();
@@ -55,12 +65,10 @@ namespace TestTask
             {
                 case CharType.Consonants:
 
-                    string consonants = "[qwrtpsdfghjklzxcvbnmQWERPSDFGHJKLZXCVBNM]";
-
                     for (int i = letters.Count - 1; i >= 0; i--)
                     {
                         var stat = letters[i];
-                        if (Regex.IsMatch(stat.Letter, consonants))
+                        if (Regex.IsMatch(stat.Letter, Consonants))
                         {
                             letters.RemoveAt(i);
                         }
@@ -68,12 +76,12 @@ namespace TestTask
 
                     break;
                 case CharType.Vowel:
-                    string vowels = "[aeiouyAEIOUY]";
+                    
 
                     for (int i = letters.Count - 1; i >= 0; i--)
                     {
                         var stat = letters[i];
-                        if (Regex.IsMatch(stat.Letter, vowels))
+                        if (Regex.IsMatch(stat.Letter, Vowels))
                         {
                             letters.RemoveAt(i);
                         }

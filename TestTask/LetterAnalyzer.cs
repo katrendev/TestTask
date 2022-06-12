@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace TestTask
 {
@@ -16,10 +17,14 @@ namespace TestTask
 
             Dictionary<char, LetterStats> letterStats = new Dictionary<char, LetterStats>();
 
-            char c = stream.ReadNextChar();
+            
 
             while (!stream.IsEof)
             {
+                char c = stream.ReadNextChar();
+
+                if(!IsLetter(c)) continue;;
+
                 if (!letterStats.ContainsKey(c))
                 {
                     letterStats[c] = new LetterStats(c.ToString(), 1);
@@ -29,8 +34,6 @@ namespace TestTask
                     LetterStats stats = letterStats[c];
                     letterStats[c] = new LetterStats(stats.Letter, stats.Count + 1);
                 }
-
-                c = stream.ReadNextChar();
             }
 
             return new List<LetterStats>(letterStats.Values);
@@ -63,7 +66,7 @@ namespace TestTask
                 string s1 = c.ToString().ToUpper();
                 string s2 = buffer.ToString().ToUpper();
 
-                if (s1 == s2)
+                if (IsLetter(buffer) && IsLetter(c) && s1 == s2)
                 {
                     string pair = s1 + s2;
                     if (!letterStats.ContainsKey(pair))
@@ -96,5 +99,9 @@ namespace TestTask
             letterStats.Count++;
         }
 
+        private bool IsLetter(char c)
+        {
+            return Regex.IsMatch(c.ToString(), "[а-яА-Яa-zA-Z]");
+        }
     }
 }
