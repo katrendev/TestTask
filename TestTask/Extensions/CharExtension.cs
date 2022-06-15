@@ -16,9 +16,7 @@ namespace TestTask.Extensions
         /// <param name="c">Проверяемые символы</param>
         /// <returns>Является ли символы гласными</returns>
         public static bool IsVowel(this char[] chars)
-        {
-            return chars.All(c => c.IsVowel());
-        }
+            => chars.All(c => c.IsVowel());
 
         /// <summary>
         /// Проверяем является ли поданный символ гласным
@@ -39,9 +37,7 @@ namespace TestTask.Extensions
         /// <param name="c">Проверяемые символы</param>
         /// <returns>Является ли символы согласными</returns>
         public static bool IsConsonant(this char[] chars)
-        {
-            return !IsVowel(chars);
-        }
+            => !IsVowel(chars);
 
         /// <summary>
         /// Проверяем является ли поданный символ согласным
@@ -50,9 +46,7 @@ namespace TestTask.Extensions
         /// <param name="c">Проверяемый символ</param>
         /// <returns>Является ли символ согласным</returns>
         public static bool IsConsonant(this char c)
-        {
-            return !IsVowel(c);
-        }
+            => !IsVowel(c);
 
         /// <summary>
         /// Возвращает значение, указывающее, равен ли этот экземпляр указанному

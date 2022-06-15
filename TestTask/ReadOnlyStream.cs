@@ -6,7 +6,6 @@ namespace TestTask
     public class ReadOnlyStream : IReadOnlyStream
     {
         private StreamReader _localStream;
-        private bool _disposed;
 
         /// <summary>
         /// Конструктор класса. 
@@ -75,27 +74,7 @@ namespace TestTask
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _localStream?.Dispose();
-            }
-            _disposed = true;
-        }
-
-        ~ReadOnlyStream()
-        {
-            Dispose(false);
+            _localStream?.Dispose();
         }
     }
 }
