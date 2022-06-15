@@ -21,8 +21,8 @@ namespace TestTask
         {
             try
             {
-                string fullPath1 = GetFullPath(args[0]);
-                string fullPath2 = GetFullPath(args[1]);
+                string fullPath1 = GetFilePath(args[0]);
+                string fullPath2 = GetFilePath(args[1]);
 
                 IList<LetterStats> singleLetterStats;
                 IList<LetterStats> doubleLetterStats;
@@ -50,11 +50,11 @@ namespace TestTask
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
         }
 
-        private static string GetFullPath(string path)
+        private static string GetFilePath(string path)
         {
             if (File.Exists(path))
             {
-                return Path.GetFullPath(path);
+                return path;
             }
             else
             {

@@ -23,7 +23,7 @@ namespace TestTask.Extensions
 
             int removedCount = 0;
 
-            for (int i = 0; i < list.Count; i++)
+            for (int i = list.Count - 1; i >= 0; i--)
             {
                 if (match(list[i]))
                 {
