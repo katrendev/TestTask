@@ -4,6 +4,9 @@ using TestTask.Streams.Interfaces;
 
 namespace TestTask.Streams
 {
+    /// <summary>
+    /// Поток для чтения файла.
+    /// </summary>
     public class ReadOnlyStream : IReadOnlyStream
     {
         #region Private Fields
@@ -23,7 +26,6 @@ namespace TestTask.Streams
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            // TODO : Заменить на создание реального стрима для чтения файла!
             _localStream = new StreamReader(fileFullPath);
         }
 
@@ -32,7 +34,7 @@ namespace TestTask.Streams
         #region Public Properties
 
         /// <summary>
-        /// Флаг окончания файла.
+        /// <inheritdoc/>
         /// </summary>
         public bool IsEof => _localStream.EndOfStream;
 
@@ -50,11 +52,8 @@ namespace TestTask.Streams
         }
 
         /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод
-        /// должен бросать соответствующее исключение
+        /// <inheritdoc/>
         /// </summary>
-        /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
             if (!IsEof)
@@ -66,7 +65,7 @@ namespace TestTask.Streams
         }
 
         /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
+        /// <inheritdoc/>
         /// </summary>
         public void ResetPositionToStart()
         {

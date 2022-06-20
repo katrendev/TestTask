@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TestTask.Data.English;
 using TestTask.Enums;
 using TestTask.Helpers;
-using TestTask.Models;
 using TestTask.Streams;
 using TestTask.Streams.Interfaces;
 
@@ -21,18 +21,42 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static Dictionary<string, int> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            Dictionary<string, int> statistic = new Dictionary<string, int>();
+
             stream.ResetPositionToStart();
+
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                StringBuilder doubleLetters = new StringBuilder();
+
+                if (doubleLetters.Length == 0)
+                {
+                    doubleLetters.Append(stream.ReadNextChar());
+                }
+
+                ///TODO проверка на конец файла.
+                doubleLetters.Append(stream.ReadNextChar());
+
+                bool isDoubledLetters = string.Equals(doubleLetters[0].ToString(), doubleLetters[1].ToString(), StringComparison.OrdinalIgnoreCase);
+
+                if (isDoubledLetters)
+                {
+                    string doubledLettersString = doubleLetters.ToString();
+
+                    if (statistic.ContainsKey(doubledLettersString))
+                    {
+                        statistic[doubledLettersString]++;
+                    }
+                    else
+                    {
+                        statistic.Add(doubledLettersString, 1);
+                    }
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return statistic;
         }
 
         /// <summary>
@@ -75,15 +99,6 @@ namespace TestTask
         }
 
         /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats">Статистика вхождений по букве/паре букв.</param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.IncreaseCount();
-        }
-
-        /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
         /// Анализирует во втором файле кол-во вхождений парных букв (не регистрозависимо). Например АА, Оо, еЕ, тт и т.д.
@@ -93,6 +108,7 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         private static void Main(string[] args)
         {
+            //TODO раскомментировать.
             //if (args.Length == 0)
             //{
             //    ConsoleHelper.Write("Args was empty");
@@ -106,16 +122,21 @@ namespace TestTask
                 singleLetterStats = FillSingleLetterStats(inputStream1);
             }
 
+            Dictionary<string, int> doubleLetterStats;
+
+            using (IReadOnlyStream inputStream1 = GetInputStream(@"C:\Users\mikhi\Desktop\dev\1.txt"))
+            {
+                doubleLetterStats = FillDoubleLetterStats(inputStream1);
+            }
+
             //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
-            //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
-
             RemoveCharStatsByType(singleLetterStats, CharType.Consonants);
-            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
-            //PrintStatistic(doubleLetterStats);
+            PrintStatistic(doubleLetterStats);
 
             ConsoleHelper.ReadKey();
         }
@@ -127,11 +148,11 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(Dictionary<char, int> letters)
+        private static void PrintStatistic<T>(Dictionary<T, int> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
 
-            IOrderedEnumerable<KeyValuePair<char, int>> sortedDictionary = from entry in letters orderby entry.Key ascending select entry;
+            IOrderedEnumerable<KeyValuePair<T, int>> sortedDictionary = from entry in letters orderby entry.Key ascending select entry;
 
             foreach (var entries in sortedDictionary)
             {
@@ -148,9 +169,9 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(Dictionary<char, int> statistic, CharType charType)
+        private static void RemoveCharStatsByType<T>(Dictionary<T, int> statistic, CharType charType)
         {
-            IReadOnlyList<char> charsFilter = null;
+            string charsFilter = null;
 
             switch (charType)
             {
@@ -169,7 +190,9 @@ namespace TestTask
 
             foreach (var letterStat in statistic.ToDictionary(key => key.Key, value => value.Value))
             {
-                if (!charsFilter.Contains(letterStat.Key))
+                char letterToCompare = letterStat.Key.ToString()[0];
+
+                if (!charsFilter.Contains(letterToCompare))
                 {
                     statistic.Remove(letterStat.Key);
                 }
