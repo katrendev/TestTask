@@ -1,0 +1,40 @@
+﻿using System;
+
+namespace TestTask.Streams.Interfaces
+{
+    /// <summary>
+    /// Интерфейс для работы с файлом в сильно урезаном виде.
+    /// Умеет всего 2 вещи: прочитать символ, и перемотать стрим на начало.
+    /// </summary>
+    internal interface IReadOnlyStream : IDisposable
+    {
+        #region Public Properties
+
+        /// <summary>
+        /// Флаг окончания файла.
+        /// </summary>
+        bool IsEof { get; }
+
+        #endregion Public Properties
+
+        #region Public Methods
+
+        /// <summary>
+        /// <inheritdoc cref="IDisposable.Dispose"/>
+        /// </summary>
+        void Dispose();
+
+        /// <summary>
+        /// Ф-ция чтения следующего символа из потока.
+        /// </summary>
+        /// <returns>Считанный символ.</returns>
+        char ReadNextChar();
+
+        /// <summary>
+        /// Сбрасывает текущую позицию потока на начало.
+        /// </summary>
+        void ResetPositionToStart();
+
+        #endregion Public Methods
+    }
+}
