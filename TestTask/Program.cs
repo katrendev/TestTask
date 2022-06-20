@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TestTask.Helpers;
 
 namespace TestTask
 {
@@ -16,6 +17,12 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                ConsoleHelper.Write("Args was empty");
+                return;
+            }
+
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
@@ -28,7 +35,7 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            ConsoleHelper.ReadKey();
         }
 
         /// <summary>
@@ -99,7 +106,7 @@ namespace TestTask
                 case CharType.Vowel:
                     break;
             }
-            
+
         }
 
         /// <summary>
