@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharType.cs" />
+    <Compile Include="Data\English\ListOfCharsTypes.cs" />
     <Compile Include="Helpers\ConsoleHelper.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
