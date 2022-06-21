@@ -45,6 +45,7 @@
     <Compile Include="Enums\CharType.cs" />
     <Compile Include="Data\English\ListOfCharsTypes.cs" />
     <Compile Include="Helpers\ConsoleHelper.cs" />
+    <Compile Include="Models\LetterStats.cs" />
     <Compile Include="Streams\Interfaces\IReadOnlyStream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

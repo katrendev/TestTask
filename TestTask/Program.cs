@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TestTask.Data.English;
 using TestTask.Enums;
 using TestTask.Helpers;
+using TestTask.Models;
 using TestTask.Streams;
 using TestTask.Streams.Interfaces;
 
@@ -21,21 +24,21 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static Dictionary<string, int> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static IEnumerable<LetterStats<string>> FillDoubleLetterStats(IReadOnlyStream stream)
         {
-            Dictionary<string, int> statistic = new Dictionary<string, int>();
+            IDictionary<string, int> statistic = new Dictionary<string, int>();
 
             stream.ResetPositionToStart();
 
-            while (!stream.IsEof)
+            StringBuilder doubleLetters = new StringBuilder();
+
+            if (!stream.IsEof)
             {
-                StringBuilder doubleLetters = new StringBuilder();
+                doubleLetters.Append(stream.ReadNextChar());
+            }
 
-                if (doubleLetters.Length == 0)
-                {
-                    doubleLetters.Append(stream.ReadNextChar());
-                }
-
+            while (!stream.IsEof)
+            { 
                 ///TODO проверка на конец файла.
                 doubleLetters.Append(stream.ReadNextChar());
 
@@ -54,9 +57,25 @@ namespace TestTask
                         statistic.Add(doubledLettersString, 1);
                     }
                 }
+
+                doubleLetters.Remove(0, 1);
             }
 
-            return statistic;
+            return CreateStats(statistic);
+        }
+
+        /// <summary>
+        /// Создает статистику из <see cref="Dictionary{T, int}"/>
+        /// </summary>
+        /// <typeparam name="T">Тип ключа словаря.</typeparam>
+        /// <param name="stats">Статистика в виде словаря.</param>
+        /// <returns>Статистика в виде <see cref="List{LetterStats}"/>.</returns>
+        private static IEnumerable<LetterStats<T>> CreateStats<T>(IDictionary<T, int> stats)
+        {
+            foreach (var stat in stats)
+            {
+                yield return new LetterStats<T>(stat.Key, stat.Value);
+            }
         }
 
         /// <summary>
@@ -65,10 +84,9 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static Dictionary<char, int> FillSingleLetterStats(IReadOnlyStream stream)
+        private static IEnumerable<LetterStats<char>> FillSingleLetterStats(IReadOnlyStream stream)
         {
-            Dictionary<char, int> statistic = new Dictionary<char, int>();
-
+            IDictionary<char, int> statistic = new Dictionary<char, int>();
             stream.ResetPositionToStart();
 
             while (!stream.IsEof)
@@ -85,7 +103,7 @@ namespace TestTask
                 }
             }
 
-            return statistic;
+            return CreateStats(statistic);
         }
 
         /// <summary>
@@ -115,14 +133,14 @@ namespace TestTask
             //    return;
             //}
 
-            Dictionary<char, int> singleLetterStats;
+            IEnumerable<LetterStats<char>> singleLetterStats;
 
             using (IReadOnlyStream inputStream1 = GetInputStream(@"C:\Users\mikhi\Desktop\dev\1.txt"))
             {
                 singleLetterStats = FillSingleLetterStats(inputStream1);
             }
 
-            Dictionary<string, int> doubleLetterStats;
+            IEnumerable<LetterStats<string>> doubleLetterStats;
 
             using (IReadOnlyStream inputStream1 = GetInputStream(@"C:\Users\mikhi\Desktop\dev\1.txt"))
             {
@@ -132,8 +150,8 @@ namespace TestTask
             //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Consonants);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            singleLetterStats = RemoveCharStatsByType(singleLetterStats, CharType.Consonants);
+            doubleLetterStats = RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
@@ -148,18 +166,19 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic<T>(Dictionary<T, int> letters)
+        private static void PrintStatistic<T>(IEnumerable<LetterStats<T>> stats, bool isSortingNecessary = true)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-
-            IOrderedEnumerable<KeyValuePair<T, int>> sortedDictionary = from entry in letters orderby entry.Key ascending select entry;
-
-            foreach (var entries in sortedDictionary)
+            if (isSortingNecessary)
             {
-                ConsoleHelper.WriteLine("{0} : {1}", entries.Key, entries.Value);
+                stats = stats.OrderBy(stat => stat.Letter);
+            }     
+
+            foreach (var stat in stats)
+            {
+                ConsoleHelper.WriteLine("{0} : {1}", stat.Letter, stat.Count);
             }
 
-            ConsoleHelper.WriteLine("Letters count : {0 }", letters.Keys.Count());
+            ConsoleHelper.WriteLine("Letters count : {0 }", stats.Count());
         }
 
         /// <summary>
@@ -169,7 +188,7 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType<T>(Dictionary<T, int> statistic, CharType charType)
+        private static IEnumerable<LetterStats<T>> RemoveCharStatsByType<T>(IEnumerable<LetterStats<T>> statistic, CharType charType)
         {
             string charsFilter = null;
 
@@ -188,13 +207,13 @@ namespace TestTask
                     break;
             }
 
-            foreach (var letterStat in statistic.ToDictionary(key => key.Key, value => value.Value))
+            foreach (var letterStat in statistic)
             {
-                char letterToCompare = letterStat.Key.ToString()[0];
+                char letterToCompare = letterStat.Letter.ToString()[0];
 
-                if (!charsFilter.Contains(letterToCompare))
+                if (charsFilter.Contains(letterToCompare))
                 {
-                    statistic.Remove(letterStat.Key);
+                    yield return letterStat;
                 }
             }
         }
