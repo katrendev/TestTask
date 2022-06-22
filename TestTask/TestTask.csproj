@@ -44,7 +44,9 @@
   <ItemGroup>
     <Compile Include="Enums\CharType.cs" />
     <Compile Include="Data\English\ListOfCharsTypes.cs" />
+    <Compile Include="EventsArgs\AnalyzingCompletedEventArgs.cs" />
     <Compile Include="Helpers\ConsoleHelper.cs" />
+    <Compile Include="Models\BuilderProperty.cs" />
     <Compile Include="Models\LetterStats.cs" />
     <Compile Include="Services\StatisticService.cs" />
     <Compile Include="Streams\Interfaces\IReadOnlyStream.cs" />
