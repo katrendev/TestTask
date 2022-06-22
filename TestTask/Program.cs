@@ -1,28 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TestTask.Data.English;
-using TestTask.Enums;
-using TestTask.Helpers;
-using TestTask.Models;
+﻿using TestTask.Helpers;
 using TestTask.Services;
-using TestTask.Streams;
-using TestTask.Streams.Interfaces;
 
 namespace TestTask
 {
     public class Program
     {
         #region Private Methods
-
-
-
-
-
-
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -44,12 +27,9 @@ namespace TestTask
             var a = new StatisticService();
             a.SetFilePath(@"C:\Users\mikhi\Desktop\dev\1.txt");
             a.StartAnalyzing();
-            
 
             ConsoleHelper.ReadKey();
         }
-
-
 
         #endregion Private Methods
     }

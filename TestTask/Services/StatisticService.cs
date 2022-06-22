@@ -11,10 +11,16 @@ using TestTask.Streams.Interfaces;
 
 namespace TestTask.Services
 {
+    /// <summary>
+    /// Сервис статистики.
+    /// </summary>
     internal sealed class StatisticService
     {
         #region Private Fields
 
+        /// <summary>
+        /// Путь до файла, который необходимо анализировать.
+        /// </summary>
         private string _fileToAnalyze;
 
         /// <summary>
@@ -33,6 +39,10 @@ namespace TestTask.Services
 
         #region Public Methods
 
+        /// <summary>
+        /// Устанавливает путь до файла.
+        /// </summary>
+        /// <param name="fileToAnalyze">Путь до файла, который нужно анализировать.</param>
         public void SetFilePath(string fileToAnalyze)
         {
             _fileToAnalyze = fileToAnalyze;
@@ -48,7 +58,7 @@ namespace TestTask.Services
             //TODO Проверить корректность путь до файла.
             using (IReadOnlyStream inputStream1 = GetInputStream(_fileToAnalyze))
             {
-                lettersStats = FillLetterStats(inputStream1);
+                lettersStats = FillLetterStats(inputStream1,2);
             }
 
             lettersStats = RemoveCharStatsByType(lettersStats, CharType.Consonants);
@@ -102,26 +112,22 @@ namespace TestTask.Services
                 ///TODO проверка на конец файла.
                 analyzingLetters.Append(stream.ReadNextChar());
 
-                foreach (var a in analyzingLetters.ToString())
+                //TODO передача флага.
+                bool isPartsEquals = IsStringPartsEquals(analyzingLetters.ToString(), true);                
+
+                if (isPartsEquals)
                 {
-                    
-                }
+                    var a = analyzingLetters.ToString();
 
-
-                bool isDoubledLetters = string.Equals(analyzingLetters[0].ToString(), analyzingLetters[1].ToString(), StringComparison.OrdinalIgnoreCase);
-
-                if (isDoubledLetters)
-                {
-                    string doubledLettersString = analyzingLetters.ToString();
 
                     //TODO вынести в отдельный метод.
-                    if (statistic.ContainsKey(doubledLettersString))
+                    if (statistic.ContainsKey(a))
                     {
-                        statistic[doubledLettersString]++;
+                        statistic[a]++;
                     }
                     else
                     {
-                        statistic.Add(doubledLettersString, 1);
+                        statistic.Add(a, 1);
                     }
                 }
 
@@ -131,41 +137,30 @@ namespace TestTask.Services
             return CreateStatistic(statistic);
         }
 
-        private bool CompareStringItself(string stringToCompare, bool isIgnoreCase)
+        /// <summary>
+        /// Сравнивает части строки друг с другом.
+        /// </summary>
+        /// <param name="stringToCompare">Строка, которую необходимо анализировать.</param>
+        /// <param name="isIgnoreCase">Необходимо ли игнорировать регистр знаков.</param>
+        /// <returns>Равны ли составляющие строки друг другу.</returns>
+        private static bool IsStringPartsEquals(string stringToCompare, bool isIgnoreCase)
         {
             if (isIgnoreCase)
             {
-                return IsEqualsIgoreCase();
-            }
-            else
-            {
-
+                stringToCompare = stringToCompare.ToLower();
             }
 
-            for (int i = 0; i < 0; i++)
+            bool isEquals = true;
+
+            foreach (char lowerChar in stringToCompare)
             {
-                for (int j = 0; j < 0; j++)
+                if (!lowerChar.Equals(stringToCompare[0]))
                 {
-
-                }
+                    isEquals = false;
+                };
             }
 
-            bool IsEqualsIgoreCase()
-            {
-                string lowerString = stringToCompare.ToLower();
-
-                bool isEquals = true;
-
-                foreach (char lowerChar in lowerString)
-                {
-                    if (!lowerChar.Equals(lowerString[0]))
-                    {
-                        isEquals = false; 
-                    };
-                }
-
-                return isEquals;
-            }
+            return isEquals;
         }
 
         /// <summary>
