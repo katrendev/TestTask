@@ -17,6 +17,11 @@
         /// </summary>
         public static readonly string VovelChars = "AEIOUYaeiouy";
 
+        /// <summary>
+        /// Список всех букв.
+        /// </summary>
+        public static string All => ConsonantsChars + VovelChars;
+
         #endregion Public Fields
     }
 }
