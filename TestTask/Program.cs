@@ -52,31 +52,35 @@ namespace TestTask
                 .SetIgnoreCaseRequire(false)
                 .StartAnalyzing();
 
+            _statisticService.SetFilePath(@"C:\Users\mikhi\Desktop\dev\1.txt")
+                .SetCharsTypeResulting(CharType.Consonants)
+                .SetCompareCharsCount(2)
+                .SetIgnoreCaseRequire(true)
+                .StartAnalyzing();
+
             _statisticService.AnalyzingCompleted -= StatisticService_AnalyzingCompleted;
 
             ConsoleHelper.ReadKey();
         }
 
         /// <summary>
-        /// Ф-ция выводит на экран полученную статистику в формате "{Буква} : {Кол-во}"
-        /// Каждая буква - с новой строки.
-        /// Выводить на экран необходимо предварительно отсортировав набор по алфавиту.
-        /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
+        /// Выводит на экран статистику анализа файла.
         /// </summary>
-        /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> stats, bool isSortingNecessary)
+        /// <param name="stats">Статистика для вывода.</param>
+        /// <param name="isSortingNecessary">Необходимо ли сортировать статистику.</param>
+        private static void PrintStatistic(IEnumerable<EntryStats> stats, bool isSortingNecessary)
         {
             if (isSortingNecessary)
             {
-                stats = stats.OrderBy(stat => stat.Letter);
+                stats = stats.OrderBy(stat => stat.Entry);
             }
 
             foreach (var stat in stats)
             {
-                ConsoleHelper.WriteLine("{0} : {1}", stat.Letter, stat.Count);
+                ConsoleHelper.WriteLine("{0} : {1}", stat.Entry, stat.Count);
             }
 
-            ConsoleHelper.WriteLine("Letters count : {0 }", stats.Count());
+            ConsoleHelper.WriteLine("Entries count : {0 }", stats.Count());
         }
 
         /// <summary>

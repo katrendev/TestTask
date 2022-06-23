@@ -47,7 +47,7 @@
     <Compile Include="EventsArgs\AnalyzingCompletedEventArgs.cs" />
     <Compile Include="Helpers\ConsoleHelper.cs" />
     <Compile Include="Models\BuilderProperty.cs" />
-    <Compile Include="Models\LetterStats.cs" />
+    <Compile Include="Models\EntryStats.cs" />
     <Compile Include="Services\StatisticService.cs" />
     <Compile Include="Streams\Interfaces\IReadOnlyStream.cs" />
     <Compile Include="Program.cs" />

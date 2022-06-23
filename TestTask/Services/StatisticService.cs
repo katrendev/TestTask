@@ -16,6 +16,25 @@ namespace TestTask.Services
     /// </summary>
     internal sealed class StatisticService
     {
+        #region Public Constructors
+
+        /// <summary>
+        /// Инициализирует экземпляр <see cref="StatisticService"/>.
+        /// </summary>
+        public StatisticService()
+        {
+            _compareCharsCount = new BuilderProperty<int>()
+            {
+                Value = DEFAULT_CHARS_COMPARE_COUNT
+            };
+
+            _fileToAnalyze = new BuilderProperty<string>();
+            _isIgnoreCaseRequire = new BuilderProperty<bool>();
+            _statistic = new Dictionary<string, int>();
+        }
+
+        #endregion Public Constructors
+
         #region Private Fields
 
         /// <summary>
@@ -26,33 +45,49 @@ namespace TestTask.Services
         /// <summary>
         /// Количество символов для сравнения.
         /// </summary>
-        private BuilderProperty<int> _compareCharsCount = new BuilderProperty<int>()
-        {
-            Value = DEFAULT_CHARS_COMPARE_COUNT
-        };
+        private BuilderProperty<int> _compareCharsCount;
 
         /// <summary>
         /// Путь до файла, который необходимо анализировать.
         /// </summary>
-        private BuilderProperty<string> _fileToAnalyze = new BuilderProperty<string>();
+        private BuilderProperty<string> _fileToAnalyze;
 
         /// <summary>
         /// Необходимо ли игнорировать регистр при сравнении строк.
         /// </summary>
-        private BuilderProperty<bool> _isIgnoreCaseRequire = new BuilderProperty<bool>();
+        private BuilderProperty<bool> _isIgnoreCaseRequire;
 
         /// <summary>
         /// Cтатистика анализа файла.
         /// </summary>
-        private IEnumerable<LetterStats> _result;
+        private IEnumerable<EntryStats> _result;
 
         /// <summary>
         /// Статистика по буквам в удобном для модификации формате.
         /// </summary>
-        private IDictionary<string, int> _statistic = new Dictionary<string, int>();
+        private IDictionary<string, int> _statistic;
 
-        /// <inheritdoc cref="_result"/>
-        public IEnumerable<LetterStats> Result => _result;
+        /// <summary>
+        /// Сбрасывает результаты анализа.
+        /// </summary>
+        public void ResetResult()
+        {
+            _result = null;
+
+            _statistic.Clear();
+        }
+
+        /// <summary>
+        /// Устанавливает дефолтные настройки.
+        /// </summary>
+        public void ResetSettings()
+        {
+            _compareCharsCount.Value = DEFAULT_CHARS_COMPARE_COUNT;
+
+            _fileToAnalyze.Reset();
+
+            _isIgnoreCaseRequire.Reset();
+        }
 
         #endregion Private Fields
 
@@ -115,6 +150,7 @@ namespace TestTask.Services
 
         /// <summary>
         /// Запускает процесс анализа файла.
+        /// Метод завершает выполнение, когда произойдет полный анализ файла.
         /// </summary>
         public void StartAnalyzing()
         {
@@ -123,7 +159,7 @@ namespace TestTask.Services
                 //TODO Проверить корректность путь до файла.
                 using (IReadOnlyStream inputStream1 = GetInputStream(_fileToAnalyze.Value))
                 {
-                    _result = GetLetterStats(inputStream1, _compareCharsCount.Value);
+                    _result = GetEntryStats(inputStream1, _compareCharsCount.Value);
                 }
 
                 _result = CreateStatistic(_statistic);
@@ -135,6 +171,8 @@ namespace TestTask.Services
             }
 
             InvokeAnalyzingCompleted();
+
+            ResetResult();
         }
 
         #endregion Public Methods
@@ -147,17 +185,56 @@ namespace TestTask.Services
         public event EventHandler<AnalyzingCompletedEventArgs> AnalyzingCompleted;
 
         /// <summary>
-        /// Создает статистику из <see cref="Dictionary{T, int}"/>
+        /// Создает статистику в виде <see cref="IEnumerable{EntryStats}"/>.
         /// </summary>
-        /// <typeparam name="T">Тип ключа словаря.</typeparam>
-        /// <param name="stats">Статистика в виде словаря.</param>
-        /// <returns>Статистика в виде <see cref="List{LetterStats}"/>.</returns>
-        private IEnumerable<LetterStats> CreateStatistic(IDictionary<string, int> stats)
+        /// <param name="stats">Статистика в виде <see cref="IDictionary{string, int}"/>.</param>
+        /// <returns>Статистика по вхождениям строк в файле.</returns>
+        private IEnumerable<EntryStats> CreateStatistic(IDictionary<string, int> stats)
         {
             foreach (var stat in stats)
             {
-                yield return new LetterStats(stat.Key, stat.Value);
+                yield return new EntryStats(stat.Key, stat.Value);
             }
+        }
+
+        /// <summary>
+        /// Возвращает статистику по символам.
+        /// </summary>
+        /// <param name="stream">Поток для считывания символов для последующего анализа.</param>
+        /// <param name="compareCharsCount">Количество символов для сравнения.</param>
+        /// <returns>Коллекция статистик по каждой букве, что была прочитана из потока.</returns>
+        private IEnumerable<EntryStats> GetEntryStats(IReadOnlyStream stream, int compareCharsCount)
+        {
+            StringBuilder analyzingEntrys = new StringBuilder();
+
+            stream.ResetPositionToStart();
+
+            //Создание начальной строки для сравнения.
+            //Если необходимо сравнивать по 1 символу, то заполнения начальной строки не будет.
+            for (int i = 1; i < compareCharsCount; i++)
+            {
+                if (!stream.IsEof)
+                {
+                    analyzingEntrys.Append(stream.ReadNextChar());
+                }
+            }
+
+            while (!stream.IsEof)
+            {
+                analyzingEntrys.Append(stream.ReadNextChar());
+                string totalEntries = analyzingEntrys.ToString();
+
+                bool isPartsEquals = IsStringPartsEquals(totalEntries, _isIgnoreCaseRequire.Value);
+
+                if (isPartsEquals)
+                {
+                    IncStatistic(ref totalEntries);
+                }
+
+                analyzingEntrys.Remove(0, 1);
+            }
+
+            return CreateStatistic(_statistic);
         }
 
         /// <summary>
@@ -171,52 +248,10 @@ namespace TestTask.Services
         }
 
         /// <summary>
-        /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения парных букв.
-        /// В статистику должны попадать только пары из одинаковых букв, например АА, СС, УУ, ЕЕ и т.д.
-        /// Статистика - НЕ регистрозависимая!
-        /// </summary>
-        /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
-        /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private IEnumerable<LetterStats> GetLetterStats(IReadOnlyStream stream, int compareCharsCount)
-        {
-            StringBuilder analyzingLetters = new StringBuilder();
-
-            stream.ResetPositionToStart();
-
-            //Создание начальной строки для сравнения.
-            //Если необходимо сравнивать по 1 символу, то заполнения начальной строки не будет.
-            for (int i = 1; i < compareCharsCount; i++)
-            {
-                if (!stream.IsEof)
-                {
-                    analyzingLetters.Append(stream.ReadNextChar());
-                }
-            }
-
-            while (!stream.IsEof)
-            {
-                analyzingLetters.Append(stream.ReadNextChar());
-
-                bool isPartsEquals = IsStringPartsEquals(analyzingLetters.ToString(), _isIgnoreCaseRequire.Value);
-
-                if (isPartsEquals)
-                {
-                    string entryToStat = analyzingLetters.ToString();
-
-                    IncStatistic(entryToStat);
-                }
-
-                analyzingLetters.Remove(0, 1);
-            }
-
-            return CreateStatistic(_statistic);
-        }
-
-        /// <summary>
         /// Записывает найденную строку в статистику.
         /// </summary>
         /// <param name="entryToStatistic">Строка для записи.</param>
-        private void IncStatistic(string entryToStatistic)
+        private void IncStatistic(ref string entryToStatistic)
         {
             if (_statistic.ContainsKey(entryToStatistic))
             {
@@ -231,15 +266,14 @@ namespace TestTask.Services
         /// <summary>
         /// Вызывает событие <see cref="AnalyzingCompleted"/>.
         /// </summary>
-        /// TODO создать кастомный аргумент.
         private void InvokeAnalyzingCompleted()
         {
-            AnalyzingCompletedEventArgs args = new AnalyzingCompletedEventArgs(Result);
+            AnalyzingCompletedEventArgs args = new AnalyzingCompletedEventArgs(_result);
             AnalyzingCompleted?.Invoke(this, args);
         }
 
         /// <summary>
-        /// Сравнивает части строки друг с другом.
+        /// Сравнивает символы строки друг с другом.
         /// </summary>
         /// <param name="stringToCompare">Строка, которую необходимо анализировать.</param>
         /// <param name="isIgnoreCase">Необходимо ли игнорировать регистр знаков.</param>
@@ -251,27 +285,24 @@ namespace TestTask.Services
                 stringToCompare = stringToCompare.ToLower();
             }
 
-            bool isEquals = true;
-
             foreach (char lowerChar in stringToCompare)
             {
                 if (!lowerChar.Equals(stringToCompare[0]))
                 {
-                    isEquals = false;
+                    return false;
                 };
             }
 
-            return isEquals;
+            return true;
         }
 
         /// <summary>
-        /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
-        /// (Тип букв для перебора определяется параметром charType)
-        /// Все найденные буквы/пары соответствующие параметру поиска - удаляются из переданной коллекции статистик.
+        /// Отсеивает статистику по выбранным буквам (гласные/согласные/все).
         /// </summary>
-        /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
-        /// <param name="charType">Тип букв для анализа</param>
-        private IEnumerable<LetterStats> RemoveCharStatsByType(IEnumerable<LetterStats> stats, CharType charType)
+        /// <param name="stats">Статистика по записям.</param>
+        /// <param name="charType">Тип букв для отсева.</param>
+        /// <returns>Отсеянная статистика</returns>
+        private IEnumerable<EntryStats> RemoveCharStatsByType(IEnumerable<EntryStats> stats, CharType charType)
         {
             string charsFilter = null;
 
@@ -286,17 +317,17 @@ namespace TestTask.Services
                     break;
 
                 default:
-                    charsFilter = ListOfCharsTypes.ConsonantsChars;
+                    charsFilter = ListOfCharsTypes.All;
                     break;
             }
 
-            foreach (var letterStat in stats)
+            foreach (var entryStat in stats)
             {
-                char letterToCompare = letterStat.Letter.ToString()[0];
+                char entryToCompare = entryStat.Entry.ToString()[0];
 
-                if (charsFilter.Contains(letterToCompare))
+                if (charsFilter.Contains(entryToCompare))
                 {
-                    yield return letterStat;
+                    yield return entryStat;
                 }
             }
         }

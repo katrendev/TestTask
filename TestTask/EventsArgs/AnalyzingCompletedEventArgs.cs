@@ -14,8 +14,8 @@ namespace TestTask.EventsArgs
         /// <summary>
         /// Инициализирует экземпляр <see cref="AnalyzingCompletedEventArgs"/>.
         /// </summary>
-        /// <param name="result"></param>
-        public AnalyzingCompletedEventArgs(IEnumerable<LetterStats> result)
+        /// <param name="result">Результаты анализа.</param>
+        public AnalyzingCompletedEventArgs(IEnumerable<EntryStats> result)
         {
             Result = result;
         }
@@ -27,7 +27,7 @@ namespace TestTask.EventsArgs
         /// <summary>
         /// Результаты анализа.
         /// </summary>
-        public IEnumerable<LetterStats> Result { get; }
+        public IEnumerable<EntryStats> Result { get; }
 
         #endregion Private Properties
     }

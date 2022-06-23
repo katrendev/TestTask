@@ -19,7 +19,7 @@
         #region Public Properties
 
         /// <summary>
-        /// Было ли задано значение.
+        /// Было ли задано значение свойству.
         /// </summary>
         public bool IsValueSetted { get; private set; }
 
@@ -32,6 +32,15 @@
                 _value = value;
                 IsValueSetted = true;
             }
+        }
+
+        /// <summary>
+        /// Сбрасывает значения.
+        /// </summary>
+        public void Reset()
+        {
+            Value = default;
+            IsValueSetted = false;
         }
 
         #endregion Public Properties
