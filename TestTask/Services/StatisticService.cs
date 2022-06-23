@@ -5,6 +5,7 @@ using System.Text;
 using TestTask.Data.English;
 using TestTask.Enums;
 using TestTask.EventsArgs;
+using TestTask.Helpers;
 using TestTask.Models;
 using TestTask.Streams;
 using TestTask.Streams.Interfaces;
@@ -156,13 +157,15 @@ namespace TestTask.Services
         {
             if (_fileToAnalyze.IsValueSetted)
             {
-                //TODO Проверить корректность путь до файла.
-                using (IReadOnlyStream inputStream1 = GetInputStream(_fileToAnalyze.Value))
-                {
-                    _result = GetEntryStats(inputStream1, _compareCharsCount.Value);
-                }
+                using (IReadOnlyStream inputStream = GetInputStream(_fileToAnalyze.Value))
+                { 
+                    if (inputStream == null)
+                    {
+                        return;
+                    }
 
-                _result = CreateStatistic(_statistic);
+                    _result = GetEntryStats(inputStream, _compareCharsCount.Value);
+                }
 
                 if (_charsTypeToResult.IsValueSetted)
                 {
@@ -244,7 +247,16 @@ namespace TestTask.Services
         /// <returns>Поток для последующего чтения.</returns>
         private IReadOnlyStream GetInputStream(string fileFullPath)
         {
-            return new ReadOnlyStream(fileFullPath);
+            try
+            {
+                return new ReadOnlyStream(fileFullPath);
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.WriteLine(ex.Message);
+            }
+
+            return null;
         }
 
         /// <summary>

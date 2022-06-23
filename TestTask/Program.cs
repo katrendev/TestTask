@@ -35,24 +35,27 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         private static void Main(string[] args)
         {
-            //TODO раскомментировать.
-            //if (args.Length == 0)
-            //{
-            //    ConsoleHelper.Write("Args was empty");
-            //    return;
-            //}
+            if (args.Length < 2)
+            {
+                ConsoleHelper.WriteLine("It needs 2 arguments to work.");
+                return;
+            }
 
             InitializeComponents();
 
             _statisticService.AnalyzingCompleted += StatisticService_AnalyzingCompleted;
 
-            _statisticService.SetFilePath(@"C:\Users\mikhi\Desktop\dev\1.txt")
+            //Анализ 1-го файла.
+            string firstFilePath = args[0];          
+            _statisticService.SetFilePath(firstFilePath)
                 .SetCharsTypeResulting(CharType.Vowel)
                 .SetCompareCharsCount(1)
                 .SetIgnoreCaseRequire(false)
                 .StartAnalyzing();
 
-            _statisticService.SetFilePath(@"C:\Users\mikhi\Desktop\dev\1.txt")
+            //Анализ 2-го файла.
+            string secondFilePath = args[1];
+            _statisticService.SetFilePath(secondFilePath)
                 .SetCharsTypeResulting(CharType.Consonants)
                 .SetCompareCharsCount(2)
                 .SetIgnoreCaseRequire(true)

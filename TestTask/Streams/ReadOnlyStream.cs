@@ -26,7 +26,7 @@ namespace TestTask.Streams
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            _localStream = new StreamReader(fileFullPath);
+          _localStream = new StreamReader(fileFullPath);
         }
 
         #endregion Public Constructors
