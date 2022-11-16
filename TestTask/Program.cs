@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestTask
 {
     public class Program
     {
+        private static HashSet<string> Vowels = new HashSet<string>
+        {  "а", "о", "у", "е", "ы", "я", "и", "ё", "ю", "a", "e", "i", "o", "u", "y" };
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -50,15 +53,31 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterStat = new Dictionary<string, LetterStats>();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (!Char.IsLetter(c))
+                    continue;
+
+                string letter = c.ToString();
+                if (letterStat.ContainsKey(letter))
+                {
+                    letterStat[letter] = IncStatistic(letterStat[letter]);
+                }
+                else
+                {
+                    CharType type = GetLetterType(letter);
+                    letterStat[letter] = new LetterStats
+                    {
+                        Count = 1,
+                        Type = type,
+                        Letter = letter
+                    };
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return letterStat.Values.ToList();
         }
 
         /// <summary>
@@ -81,6 +100,10 @@ namespace TestTask
 
             throw new NotImplementedException();
         }
+
+        private static CharType GetLetterType(string letter) => IsVowel(letter) ? CharType.Vowel : CharType.Consonants;
+
+        private static bool IsVowel(string letter) => Vowels.Contains(letter.ToLower());
 
         /// <summary>
         /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
@@ -119,11 +142,10 @@ namespace TestTask
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        private static LetterStats IncStatistic(LetterStats letterStats)
         {
             letterStats.Count++;
+            return letterStats;
         }
-
-
     }
 }
