@@ -90,15 +90,35 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterStat = new Dictionary<string, LetterStats>();
+            string prev = string.Empty;
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                if (!Char.IsLetter(c))
+                    continue;
+
+                string letter = c.ToString().ToLower();
+                if (String.Equals(letter, prev))
+                {
+                    if (letterStat.ContainsKey(letter))
+                    {
+                        letterStat[letter] = IncStatistic(letterStat[letter]);
+                    }
+                    else
+                    {
+                        var type = GetLetterType(letter);
+                        letterStat[letter] = new LetterStats
+                        {
+                            Count = 1,
+                            Type = type,
+                            Letter = letter
+                        };
+                    }
+                }
+                prev = letter;
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return letterStat.Values.ToList();
         }
 
         private static CharType GetLetterType(string letter) => IsVowel(letter) ? CharType.Vowel : CharType.Consonants;
