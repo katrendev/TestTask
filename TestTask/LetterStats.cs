@@ -11,6 +11,11 @@
         public string Letter;
 
         /// <summary>
+        /// Тип буквы/пары (гласная или согласная)
+        /// </summary>
+        public CharType Type;
+
+        /// <summary>
         /// Кол-во вхождений буквы/пары.
         /// </summary>
         public int Count;
