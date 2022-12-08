@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>TestTask</RootNamespace>
     <AssemblyName>TestTask</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -43,11 +44,30 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharType.cs" />
-    <Compile Include="IReadOnlyStream.cs" />
+    <Compile Include="LetterContext.cs" />
     <Compile Include="LetterStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadOnlyStream.cs" />
+    <Compile Include="ReadFromStream\FillDoubleLetterStats.cs" />
+    <Compile Include="ReadFromStream\FillSingleLetterStats.cs" />
+    <Compile Include="ReadFromStream\IReadLetterFromStream.cs" />
+    <Compile Include="ReadFromStream\IReadOnlyStream.cs" />
+    <Compile Include="ReadFromStream\ReadOnlyStream.cs" />
+    <Compile Include="ReadFromStream\ReadStream.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="System">
+      <Guid>{BEE4BFEC-6683-3E67-9167-3C0CBC68F40A}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>4</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
