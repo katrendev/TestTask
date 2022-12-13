@@ -43,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharType.cs" />
+    <Compile Include="Extensions\CharExtensions.cs" />
+    <Compile Include="Extensions\LetterStatsExtensions.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
     <Compile Include="Program.cs" />

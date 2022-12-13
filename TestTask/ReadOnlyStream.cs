@@ -1,11 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,20 +14,20 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            if (!File.Exists(fileFullPath))
+                throw new FileNotFoundException();
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath);
         }
-                
+        public void Dispose()
+        {
+            _localStream?.Dispose();
+        }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+        public bool IsEof => _localStream.EndOfStream;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -38,8 +37,10 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+                throw new EndOfStreamException();
+
+            return (char)_localStream.Read();
         }
 
         /// <summary>
@@ -47,14 +48,7 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
-
-            _localStream.Position = 0;
-            IsEof = false;
+            _localStream.BaseStream.Position = 0;
         }
     }
 }
