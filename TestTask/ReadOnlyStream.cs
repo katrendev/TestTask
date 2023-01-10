@@ -13,10 +13,8 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            if(File.Exists(fileFullPath)) _localStream = new FileStream(fileFullPath, FileMode.Open);
+            else IsEof = true;            
         }
                 
         /// <summary>
