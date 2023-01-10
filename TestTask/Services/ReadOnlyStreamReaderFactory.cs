@@ -3,7 +3,7 @@ using TestTask.Services.Interfaces;
 
 namespace TestTask.Services
 {
-    internal class ReadOnlyFileStreamFactory : ReadOnlyStreamFactory
+    internal class ReadOnlyStreamReaderFactory : ReadOnlyStreamFactory
     {
         /// <summary>
         /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
@@ -12,7 +12,7 @@ namespace TestTask.Services
         /// <returns>Поток для последующего чтения.</returns>
         public override IReadOnlyStream Create(string fileFullPath)
         {
-            return new ReadOnlyFileStream(fileFullPath);
+            return new ReadOnlyStreamReader(fileFullPath);
         }
     }
 }   

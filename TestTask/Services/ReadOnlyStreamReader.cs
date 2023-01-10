@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using TestTask.Services.Interfaces;
 
 namespace TestTask.Services
@@ -7,29 +8,27 @@ namespace TestTask.Services
     /// <summary>
     /// Работа с файлами реализована через FileStream
     /// </summary>
-    internal class ReadOnlyFileStream : IReadOnlyStream
+    internal class ReadOnlyStreamReader : IReadOnlyStream
     {
         /// <summary>
         /// Поток для чтения
         /// </summary>
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get;
-            private set;
+            get => _localStream?.EndOfStream ?? true;
         }
         /// <summary>
         /// Конструктор класса. 
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyFileStream(string fileFullPath)
+        public ReadOnlyStreamReader(string fileFullPath)
         {
-            if(File.Exists(fileFullPath)) _localStream = new FileStream(fileFullPath, FileMode.Open);
-            else IsEof = true;            
+            if(File.Exists(fileFullPath)) _localStream = new StreamReader(fileFullPath);           
         }
 
         /// <summary>
@@ -38,36 +37,24 @@ namespace TestTask.Services
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            if (IsEof) throw new ArgumentOutOfRangeException(nameof(IsEof),"Достигнут конец файла");
+            if (IsEof) throw new EndOfStreamException();
 
-            var bytes = new byte[1];
-
-            if (_localStream.Read(bytes, 0, bytes.Length) == 0) IsEof = true;
-
-            return (char)bytes[0];
-        }
+            return (char)_localStream.Read();
+        }   
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            if (_localStream == null) return;
 
-            _localStream.Position = 0;
-            IsEof = false;
+            _localStream.BaseStream.Position = 0;
         }
 
         /// <summary>
         /// Освобождение ресурсов (закрываем поток)
         /// </summary>
-        public void Dispose()
-        {
-            _localStream.Dispose();
-        }
+        public void Dispose()=> _localStream?.Dispose();
     }
 }

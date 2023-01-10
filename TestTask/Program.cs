@@ -24,7 +24,7 @@ namespace TestTask
             IList<LetterStats> singleLetterStats;
             IList<LetterStats> doubleLetterStats;
 
-            ReadOnlyStreamFactory factory = new ReadOnlyFileStreamFactory();
+            ReadOnlyStreamFactory factory = new ReadOnlyStreamReaderFactory();
 
             using (IReadOnlyStream inputStream1 = factory.Create(args[0]))
             {
