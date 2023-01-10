@@ -9,8 +9,6 @@ namespace TestTask
 
         /// <summary>
         /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
@@ -55,6 +53,12 @@ namespace TestTask
 
             _localStream.Position = 0;
             IsEof = false;
+        }
+
+
+        public void Dispose()
+        {
+            _localStream.Dispose();
         }
     }
 }
