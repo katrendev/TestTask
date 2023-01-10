@@ -28,8 +28,6 @@ namespace TestTask
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
         /// </summary>
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
@@ -58,7 +56,9 @@ namespace TestTask
             IsEof = false;
         }
 
-
+        /// <summary>
+        /// Освобождение ресурсов (закрываем поток)
+        /// </summary>
         public void Dispose()
         {
             _localStream.Dispose();
