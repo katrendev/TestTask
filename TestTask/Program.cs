@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TestTask.Enums;
 using TestTask.Models;
 using TestTask.Services;
+using TestTask.Services.Base;
 using TestTask.Services.Interfaces;
 
 namespace TestTask
@@ -23,11 +24,13 @@ namespace TestTask
             IList<LetterStats> singleLetterStats;
             IList<LetterStats> doubleLetterStats;
 
-            using (IReadOnlyStream inputStream1 = GetInputStream(args[0]))
+            ReadOnlyStreamFactory factory = new ReadOnlyFileStreamFactory();
+
+            using (IReadOnlyStream inputStream1 = factory.Create(args[0]))
             {
                 singleLetterStats = StatisticsService.FillSingleLetterStats(inputStream1);
             }
-            using (IReadOnlyStream inputStream2 = GetInputStream(args[1])) 
+            using (IReadOnlyStream inputStream2 = factory.Create(args[1])) 
             {
                 doubleLetterStats = StatisticsService.FillDoubleLetterStats(inputStream2);
             }
@@ -39,16 +42,6 @@ namespace TestTask
             StatisticsService.PrintStatistic(doubleLetterStats);
 
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
-        }
-
-        /// <summary>
-        /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
-        /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        /// <returns>Поток для последующего чтения.</returns>
-        private static IReadOnlyStream GetInputStream(string fileFullPath)
-        {
-            return new ReadOnlyFileStream(fileFullPath);
         }
     }
 }
