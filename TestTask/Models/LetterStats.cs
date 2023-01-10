@@ -13,15 +13,7 @@
         /// <summary>
         /// Кол-во вхождений буквы/пары.
         /// </summary>
-        public int Count { get; private set; }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений.
-        /// </summary>
-        public void IncStatistic()
-        {
-            Count++;
-        }
+        public int Count { get; set; }
 
         public override string ToString()
         {

@@ -4,6 +4,7 @@ using System;
 using TestTask.Enums;
 using TestTask.Models;
 using TestTask.Services.Interfaces;
+using System.Linq;
 
 namespace TestTask.Services
 {
@@ -17,11 +18,14 @@ namespace TestTask.Services
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         public static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            var result = new LinkedList<LetterStats>();
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (!char.IsLetter(c))
+                    continue;
             }
 
             //return ???;
@@ -81,6 +85,16 @@ namespace TestTask.Services
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Метод увеличивает счётчик вхождений по переданной структуре.
+        /// </summary>
+        /// <param name="letterStats"></param>
+        private static LetterStats IncStatistic(LetterStats letterStats)
+        {
+            letterStats.Count++;
+            return letterStats;
         }
     }
 }
