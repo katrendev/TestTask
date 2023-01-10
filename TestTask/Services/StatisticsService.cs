@@ -18,7 +18,7 @@ namespace TestTask.Services
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         public static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
-            var result = new LinkedList<LetterStats>();
+            var result = new List<LetterStats>();
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
@@ -26,11 +26,15 @@ namespace TestTask.Services
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
                 if (!char.IsLetter(c))
                     continue;
+                string s = c.ToString();
+                var ls = result.SingleOrDefault(r => r.Letter == s);
+                if (ls.Letter == s) result.Remove(ls);
+                else ls.Letter = s;
+
+                result.Add(IncStatistic(ls));
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return result;
         }
 
         /// <summary>
