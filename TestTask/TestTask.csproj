@@ -49,8 +49,8 @@
     <Compile Include="Models\LetterStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\ReadOnlyFileStream.cs" />
-    <Compile Include="Services\ReadOnlyFileStreamFactory.cs" />
+    <Compile Include="Services\ReadOnlyStreamReader.cs" />
+    <Compile Include="Services\ReadOnlyStreamReaderFactory.cs" />
     <Compile Include="Services\StatisticsService.cs" />
   </ItemGroup>
   <ItemGroup>
