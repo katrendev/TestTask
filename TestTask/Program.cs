@@ -40,8 +40,9 @@ namespace TestTask
 
             StatisticsService.PrintStatistic(singleLetterStats);
             StatisticsService.PrintStatistic(doubleLetterStats);
-
+           
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey();
         }
     }
 }
