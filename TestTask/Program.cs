@@ -21,6 +21,9 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
+            if (args.Length < 2)
+                return;
+
             IList<LetterStats> singleLetterStats;
             IList<LetterStats> doubleLetterStats;
 
