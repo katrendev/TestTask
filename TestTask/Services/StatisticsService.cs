@@ -18,14 +18,17 @@ namespace TestTask.Services
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         public static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            if (stream == null)
+                return new List<LetterStats>();
+
             var result = new List<LetterStats>();
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
                 if (!char.IsLetter(c))
                     continue;
+
                 string s = c.ToString();
                 var ls = result.SingleOrDefault(r => r.Letter == s);
                 if (ls.Letter == s) result.Remove(ls);
@@ -46,16 +49,32 @@ namespace TestTask.Services
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         public static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            if (stream == null)
+                return new List<LetterStats>();
+
+            var result = new List<LetterStats>();
             stream.ResetPositionToStart();
+            char firstChar = ' ';
+            while (!char.IsLetter(firstChar) && !stream.IsEof)
+                firstChar = stream.ReadNextChar();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char secondChar = stream.ReadNextChar();
+                string s = (firstChar.ToString() + secondChar.ToString()).ToUpper();
+                if (!char.IsLetter(firstChar) || !char.IsLetter(secondChar) || s[0] != s[1])
+                {
+                    firstChar = secondChar;
+                    continue;
+                }
+                    
+                var ls = result.SingleOrDefault(r => r.Letter == s);
+
+                if (ls.Letter == s) result.Remove(ls);
+                else ls.Letter = s;
+
+                result.Add(IncStatistic(ls));
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return result;
         }
 
         /// <summary>
@@ -67,10 +86,12 @@ namespace TestTask.Services
         /// <param name="charType">Тип букв для анализа</param>
         public static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
+            if (letters == null || letters.Count == 0) return;
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
             {
                 case CharType.Consonants:
+                    
                     break;
                 case CharType.Vowel:
                     break;
