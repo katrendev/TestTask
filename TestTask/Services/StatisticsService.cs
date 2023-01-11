@@ -87,14 +87,34 @@ namespace TestTask.Services
         public static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             if (letters == null || letters.Count == 0) return;
-            // TODO : Удалить статистику по запрошенному типу букв.
+            const string consonants = "аеёиоуыэюя" +
+                "АЕЁИОУЫЭЮЯ" +
+                "aeiouy" +
+                "AEIOUY";
+            const string vowels = "бвгджзйклмнпрстфхцчшщ" +
+                "БВГДЖЗЙКЛМНПРСТФХЦЧШЩ" +
+                "bcdfghjklmnpqrstvwxyz" +
+                "BCDFGHJKLMNPQRSTVWXYZ";
             switch (charType)
             {
                 case CharType.Consonants:
-                    
-                    break;
+                    {
+                        for (int i = 0; i < letters.Count; i++)
+                        {
+                            if (consonants.Contains(letters[i].Letter))
+                                letters.RemoveAt(i--);
+                        }
+                        break;
+                    }
                 case CharType.Vowel:
-                    break;
+                    {
+                        for (int i = 0; i < letters.Count; i++)
+                        {
+                            if (vowels.Contains(letters[i].Letter))
+                                letters.RemoveAt(i--);
+                        }
+                        break;
+                    }
             }
 
         }
@@ -108,8 +128,10 @@ namespace TestTask.Services
         /// <param name="letters">Коллекция со статистикой</param>
         public static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            foreach (var item in letters.OrderBy(l => l.Letter))
+            {
+                Console.WriteLine(item);
+            }
         }
 
         /// <summary>
