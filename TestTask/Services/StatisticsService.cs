@@ -44,6 +44,8 @@ namespace TestTask.Services
         /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения парных букв.
         /// В статистику должны попадать только пары из одинаковых букв, например АА, СС, УУ, ЕЕ и т.д.
         /// Статистика - НЕ регистрозависимая!
+        /// AAA - 3 повторяющихся символа считаем, как 2 повторяющихся пары! 0 и 1 символы и 1 и 2 символы,
+        /// так как иное не указано в ТЗ
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
@@ -128,10 +130,13 @@ namespace TestTask.Services
         /// <param name="letters">Коллекция со статистикой</param>
         public static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
+            int count = 0;
             foreach (var item in letters.OrderBy(l => l.Letter))
             {
                 Console.WriteLine(item);
+                count += item.Count;
             }
+            Console.WriteLine($"ИТОГО : {count}");
         }
 
         /// <summary>
