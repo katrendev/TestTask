@@ -17,7 +17,7 @@
 
         public override string ToString()
         {
-            return Letter + " " + Count;
+            return $"{Letter} : {Count}";
         }
     }
 }
