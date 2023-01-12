@@ -21,29 +21,32 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            if (args.Length < 2)
-                return;
-
-            IList<LetterStats> singleLetterStats;
-            IList<LetterStats> doubleLetterStats;
-
-            ReadOnlyStreamFactory factory = new ReadOnlyStreamReaderFactory();
-
-            using (IReadOnlyStream inputStream1 = factory.Create(args[0]))
+            try
             {
-                singleLetterStats = StatisticsService.FillSingleLetterStats(inputStream1);
-            }
-            using (IReadOnlyStream inputStream2 = factory.Create(args[1])) 
-            {
-                doubleLetterStats = StatisticsService.FillDoubleLetterStats(inputStream2);
-            }
-            
-            StatisticsService.RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            StatisticsService.RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+                IList<LetterStats> singleLetterStats;
+                IList<LetterStats> doubleLetterStats;
 
-            StatisticsService.PrintStatistic(singleLetterStats);
-            StatisticsService.PrintStatistic(doubleLetterStats);
-           
+                ReadOnlyStreamFactory factory = new ReadOnlyStreamReaderFactory();
+
+                using (IReadOnlyStream inputStream1 = factory.Create(args[0]))
+                {
+                    singleLetterStats = StatisticsService.FillSingleLetterStats(inputStream1);
+                }
+                using (IReadOnlyStream inputStream2 = factory.Create(args[1]))
+                {
+                    doubleLetterStats = StatisticsService.FillDoubleLetterStats(inputStream2);
+                }
+
+                StatisticsService.RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+                StatisticsService.RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+
+                StatisticsService.PrintStatistic(singleLetterStats);
+                StatisticsService.PrintStatistic(doubleLetterStats);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex.Message} {ex.InnerException}");
+            }
             // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
             Console.ReadKey();
         }
