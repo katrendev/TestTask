@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using TestTask.Services.Interfaces;
 
@@ -28,7 +29,14 @@ namespace TestTask.Services
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStreamReader(string fileFullPath)
         {
-            if(File.Exists(fileFullPath)) _localStream = new StreamReader(fileFullPath);           
+            try
+            {
+                _localStream = new StreamReader(fileFullPath);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -37,6 +45,8 @@ namespace TestTask.Services
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
+            if (_localStream == null) throw new NullReferenceException();
+            if (_localStream.BaseStream == null) throw new ObjectDisposedException("Чтение из закрытого TextReader невозможно");
             if (IsEof) throw new EndOfStreamException();
 
             return (char)_localStream.Read();
@@ -47,14 +57,22 @@ namespace TestTask.Services
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null) return;
+            if (_localStream == null) throw new NullReferenceException();
+            if (_localStream.BaseStream == null) throw new ObjectDisposedException("Чтение из закрытого TextReader невозможно");
+            if (_localStream.BaseStream.Position == 0) return;
 
-            _localStream.BaseStream.Position = 0;
+            //сбрасываем внутренний буфер
+            _localStream.DiscardBufferedData();
+            _localStream.BaseStream.Seek(0L,SeekOrigin.Begin);
+
+            //текстовые редакторы по типу блокнота добавляют неразрывный пробел 0 ширины, прочитаем его
+            if (_localStream.Peek() == 65279)
+                _localStream.Read();
         }
 
         /// <summary>
         /// Освобождение ресурсов (закрываем поток)
         /// </summary>
-        public void Dispose()=> _localStream?.Dispose();
+        public void Dispose() => _localStream?.Dispose();
     }
 }
