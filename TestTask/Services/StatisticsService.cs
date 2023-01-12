@@ -101,8 +101,14 @@ namespace TestTask.Services
                     {
                         for (int i = 0; i < letters.Count; i++)
                         {
-                            if (consonants.Contains(letters[i].Letter))
-                                letters.RemoveAt(i--);
+                            foreach (var item in letters[i].Letter)
+                            {
+                                if (consonants.Contains(item))
+                                {
+                                    letters.RemoveAt(i--);
+                                    break;
+                                }
+                            }
                         }
                         break;
                     }
@@ -110,8 +116,14 @@ namespace TestTask.Services
                     {
                         for (int i = 0; i < letters.Count; i++)
                         {
-                            if (vowels.Contains(letters[i].Letter))
-                                letters.RemoveAt(i--);
+                            foreach (var item in letters[i].Letter)
+                            {
+                                if (vowels.Contains(item))
+                                {
+                                    letters.RemoveAt(i--);
+                                    break;
+                                }
+                            }
                         }
                         break;
                     }
