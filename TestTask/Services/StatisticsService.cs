@@ -18,8 +18,7 @@ namespace TestTask.Services
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         public static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
-            if (stream == null)
-                return new List<LetterStats>();
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             var result = new List<LetterStats>();
             stream.ResetPositionToStart();
@@ -51,8 +50,7 @@ namespace TestTask.Services
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         public static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
-            if (stream == null)
-                return new List<LetterStats>();
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             var result = new List<LetterStats>();
             stream.ResetPositionToStart();
@@ -89,11 +87,11 @@ namespace TestTask.Services
         public static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             if (letters == null || letters.Count == 0) return;
-            const string consonants = "аеёиоуыэюя" +
+            const string vowels = "аеёиоуыэюя" +
                 "АЕЁИОУЫЭЮЯ" +
                 "aeiouy" +
                 "AEIOUY";
-            const string vowels = "бвгджзйклмнпрстфхцчшщ" +
+            const string consonants = "бвгджзйклмнпрстфхцчшщ" +
                 "БВГДЖЗЙКЛМНПРСТФХЦЧШЩ" +
                 "bcdfghjklmnpqrstvwxyz" +
                 "BCDFGHJKLMNPQRSTVWXYZ";
