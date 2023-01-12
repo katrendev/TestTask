@@ -8,7 +8,7 @@ namespace TestTask.Services
     /// <summary>
     /// Работа с файлами реализована через FileStream
     /// </summary>
-    internal class ReadOnlyStreamReader : IReadOnlyStream
+    public class ReadOnlyStreamReader : IReadOnlyStream
     {
         /// <summary>
         /// Поток для чтения

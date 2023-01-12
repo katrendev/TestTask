@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace TestTask.Services
 {
-    internal static class StatisticsService
+    public static class StatisticsService
     {
         /// <summary>
         /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения каждой буквы.

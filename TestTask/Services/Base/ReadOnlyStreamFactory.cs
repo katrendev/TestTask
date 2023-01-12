@@ -2,7 +2,7 @@
 
 namespace TestTask.Services.Base
 {
-    abstract internal class ReadOnlyStreamFactory
+    abstract public class ReadOnlyStreamFactory
     {
         /// <summary>
         /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
