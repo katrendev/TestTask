@@ -5,7 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -17,8 +17,7 @@ namespace TestTask
         {
             IsEof = true;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new StreamReader(fileFullPath);
         }
                 
         /// <summary>
@@ -26,7 +25,7 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +37,26 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            try {
+                if (IsEof == true || _localStream.Peek() == -1)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+                char result = (char)_localStream.Read();
+                if (_localStream.Peek() == -1)
+                {
+                    IsEof = true;
+                }
+                return result;
+            }
+            catch (ArgumentOutOfRangeException) {
+                IsEof = true;
+                throw new ArgumentOutOfRangeException();
+            }
+            catch (Exception ex) {
+                IsEof = true;
+                throw new NotImplementedException(ex.Message);
+            }
         }
 
         /// <summary>
@@ -53,8 +70,18 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
+            _localStream.DiscardBufferedData();
             IsEof = false;
+        }
+
+        public void Dispose ()
+        {
+            _localStream.Dispose();
+        }
+
+        ~ReadOnlyStream()
+        {
+            Dispose();
         }
     }
 }
