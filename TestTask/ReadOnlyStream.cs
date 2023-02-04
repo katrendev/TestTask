@@ -3,58 +3,125 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
-    {
-        private Stream _localStream;
+	public class ReadOnlyStream : IReadOnlyStream
+	{
+		#region Private Fields
 
-        /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
-        /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
-        {
-            IsEof = true;
+		/// <summary>
+		/// Было ли освобождение ресурсов.
+		/// </summary>
+		private bool _isDisposed = false;
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
-        }
-                
-        /// <summary>
-        /// Флаг окончания файла.
-        /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+		private Stream _localStream;
 
-        /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
-        /// </summary>
-        /// <returns>Считанный символ.</returns>
-        public char ReadNextChar()
-        {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
-        }
+		private StreamReader _localStreamReader;
 
-        /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
-        /// </summary>
-        public void ResetPositionToStart()
-        {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+		#endregion Private Fields
 
-            _localStream.Position = 0;
-            IsEof = false;
-        }
-    }
+		#region Public Properties
+
+		/// <summary>
+		/// Флаг окончания файла.
+		/// </summary>
+		public bool IsEof => _localStreamReader.EndOfStream;
+
+		#endregion Public Properties
+
+		#region Public Constructors
+
+		/// <summary>
+		/// Конструктор класса.
+		/// Т.к. происходит прямая работа с файлом, необходимо
+		/// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+		/// </summary>
+		/// <param name="fileFullPath">Полный путь до файла для чтения</param>
+		public ReadOnlyStream(string fileFullPath)
+		{
+			InitializeComponents(fileFullPath);
+		}
+
+		#endregion Public Constructors
+
+		#region Private Destructors
+
+		/// <summary>
+		/// Деструктор.
+		/// </summary>
+		~ReadOnlyStream() => Dispose(false);
+
+		#endregion Private Destructors
+
+		#region Public Methods
+
+		/// <summary>
+		/// Реализация интерфейса IDisposable.
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Ф-ция чтения следующего символа из потока.
+		/// Если произведена попытка прочитать символ после достижения конца файла, метод
+		/// должен бросать соответствующее исключение
+		/// </summary>
+		/// <returns>Считанный символ.</returns>
+		public string ReadNextChar()
+		{
+			if (IsEof)
+			{
+				throw new EndOfStreamException();
+			}
+
+			char currentLetter = (char)_localStreamReader.Read();
+
+			return currentLetter.ToString();
+		}
+
+		/// <summary>
+		/// Сбрасывает текущую позицию потока на начало.
+		/// </summary>
+		public void ResetPositionToStart()
+		{
+			_localStream.Position = 0;
+		}
+
+		#endregion Public Methods
+
+		#region Protected Methods
+
+		/// <summary>
+		/// Освобождает ресурсы.
+		/// </summary>
+		protected virtual void Dispose(bool isManualDisposal)
+		{
+			if (!_isDisposed)
+			{
+				if (isManualDisposal)
+				{
+					_localStreamReader.Dispose();
+					_localStream.Dispose();
+				}
+
+				_isDisposed = true;
+			}
+		}
+
+		#endregion Protected Methods
+
+		#region Private Methods
+
+		/// <summary>
+		/// Инициализирует компоненты объекта класса <see cref="ReadOnlyStream"/>.
+		/// </summary>
+		private void InitializeComponents(string fileFullPath)
+		{
+			_localStream = File.Open(fileFullPath, FileMode.Open, FileAccess.Read);
+			_localStreamReader = new StreamReader(_localStream);
+		}
+
+		#endregion Private Methods
+	}
 }
