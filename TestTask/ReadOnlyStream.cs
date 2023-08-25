@@ -5,7 +5,9 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
+        private readonly char DefaultChar = '\0';
         private Stream _localStream;
+        private bool _closedStream = false;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +17,32 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            _localStream = File.OpenRead(fileFullPath);
+        }
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+        ~ReadOnlyStream()
+        {
+            if (_closedStream)
+            {
+                return;
+            }
+            CloseStream();
+        }
+
+        public void Dispose()
+        {
+            CloseStream();
+        }
+
+        public void CloseStream()
+        {
+            if (_closedStream)
+            {
+                return;
+            }
+
+            _localStream.Close();
+            _closedStream = true;
         }
                 
         /// <summary>
@@ -26,8 +50,7 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get => _localStream == null || _localStream.Position == _localStream.Length;
         }
 
         /// <summary>
@@ -38,8 +61,12 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (!TryGetNextChar(out char nextChar))
+            {
+                throw new EofException();
+            }
+            
+            return nextChar;
         }
 
         /// <summary>
@@ -49,12 +76,23 @@ namespace TestTask
         {
             if (_localStream == null)
             {
-                IsEof = true;
                 return;
             }
 
             _localStream.Position = 0;
-            IsEof = false;
+        }
+
+        private bool TryGetNextChar(out char nextChar)
+        {
+            nextChar = DefaultChar;
+            if(_localStream == null)
+            {
+                return false;
+            }
+            var nextByte = _localStream.ReadByte();
+
+            nextChar = (char)nextByte;
+            return true;
         }
     }
 }

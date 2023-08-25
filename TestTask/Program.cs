@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 
 namespace TestTask
 {
@@ -25,10 +27,16 @@ namespace TestTask
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
             RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
+            Console.WriteLine("first output:");
             PrintStatistic(singleLetterStats);
+            Console.WriteLine("second output:");
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            inputStream1.CloseStream();
+            inputStream2.CloseStream();
+
+            Console.WriteLine("Press key to continue.");
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -50,15 +58,20 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterStatsDictionary = new Dictionary<string, LetterStats>();
+
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (!Char.IsLetter(c))
+                {
+                    continue;
+                }
+                
+                UpdateLettersStats(c.ToString(), letterStatsDictionary);
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return new List<LetterStats>(letterStatsDictionary.Values);
         }
 
         /// <summary>
@@ -71,15 +84,31 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            char previousChar;
+            var lettersStatsList = new List<LetterStats>();
+
+            if (stream.IsEof)
+            {
+                return lettersStatsList;
+            }
+            previousChar = Char.ToLower(stream.ReadNextChar());
+
+            var letterStatsDictionary = new Dictionary<string, LetterStats>();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char c = Char.ToLower(stream.ReadNextChar());
+                if (!Char.IsLetter(previousChar) || !Char.IsLetter(c) || previousChar != c)
+                {
+                    previousChar = c;
+                    continue;
+                }
+            
+                var key = new string(new char[] {c, c});
+                UpdateLettersStats(key, letterStatsDictionary);
+                previousChar = c;
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return new List<LetterStats>(letterStatsDictionary.Values);
         }
 
         /// <summary>
@@ -91,15 +120,39 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
+            var charMaster = new CharMaster();
             switch (charType)
             {
+
                 case CharType.Consonants:
+                    for (int i = 0; i < letters.Count;)
+                    {
+                        var letterStat = letters[i];
+                        if (letterStat.Letter.Length == 0 || charMaster.IsConsonants(letterStat.Letter[0]))
+                        {
+                            letters.RemoveAt(i);
+                        }
+                        else
+                        {
+                            ++i;
+                        }
+                    }
                     break;
                 case CharType.Vowel:
+                    for (int i = 0; i < letters.Count;)
+                    {
+                        var letterStat = letters[i];
+                        if (letterStat.Letter.Length == 0 || charMaster.IsVowel(letterStat.Letter[0]))
+                        {
+                            letters.RemoveAt(i);
+                        }
+                        else
+                        {
+                            ++i;
+                        }
+                    }
                     break;
             }
-            
         }
 
         /// <summary>
@@ -111,8 +164,19 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            var sortedList = GetSortedLettersStatsList(letters);
+
+            var stringBuilder = new StringBuilder();
+            foreach(var letterStat in sortedList)
+            {
+                stringBuilder.Clear();
+                stringBuilder.Append('{');
+                stringBuilder.Append(letterStat.Letter[0]);
+                stringBuilder.Append("} : {");
+                stringBuilder.Append(letterStat.Count);
+                stringBuilder.Append('}');
+                Console.WriteLine(stringBuilder.ToString());
+            }
         }
 
         /// <summary>
@@ -124,6 +188,49 @@ namespace TestTask
             letterStats.Count++;
         }
 
+        private static void UpdateLettersStats(string key, Dictionary<string, LetterStats> letterStatsDictionary)
+        {
+            if (letterStatsDictionary.ContainsKey(key))
+            {
+                var currentLetterStats = letterStatsDictionary[key];
+                currentLetterStats.Count++;
+                letterStatsDictionary[key] = currentLetterStats;
+            }
+            else
+            {
+                var newLetterStats = new LetterStats() { Letter=key, Count=1 };
+                letterStatsDictionary.Add(key, newLetterStats);
+            }
+        }
 
+        private static IList<LetterStats> GetSortedLettersStatsList(IEnumerable<LetterStats> letters)
+        {
+            var sortedList = new List<LetterStats>();
+
+            foreach (var letterStat in letters)
+            {
+                int i = 0;
+                bool insertedElement = false;
+                for (; i < sortedList.Count; ++i)
+                {
+                    var currentLetter = letterStat.Letter;
+                    var currentLetterFromSorted = sortedList[i].Letter;
+                    if(currentLetter.Length == 0 || 
+                        Char.ToLower(currentLetter[0]) <= Char.ToLower(currentLetterFromSorted[0])
+                    )
+                    {
+                        sortedList.Insert(i, letterStat);
+                        insertedElement = true;
+                        break;
+                    }
+                }
+                if(!insertedElement)
+                {
+                    sortedList.Add(letterStat);
+                }
+            }
+
+            return sortedList;
+        }
     }
 }
