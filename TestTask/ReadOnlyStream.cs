@@ -7,6 +7,8 @@ namespace TestTask
     {
         private Stream _localStream;
 
+        private StreamReader _localStreamReader;
+
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -17,8 +19,10 @@ namespace TestTask
         {
             // TODO : Заменить на создание реального стрима для чтения файла!
             _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        }
 
+            _localStreamReader = new StreamReader(_localStream);
+        }
+                
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
@@ -37,11 +41,41 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+
+            var nextValue = _localStreamReader.Read(); 
+
+            char nextChar = new char();
+
+            if (nextValue != -1 || !IsEof)
+            {
+                /*
+                  *  Не совсем понял как вы хотите чтобы обрабатывалось исключение при попытке 
+                  *  прочитать следующий символ после окончания файла, поэтому попытался сделать дословно.
+                  *  
+                  *  Кроме того я не был уверен в том через что вы хотите, чтобы я сделал получение очередного
+                  *  символа, через FileStream или через StreamReader. Я видел в описании примеры на кириллице,
+                  *  поэтому сделал через FileStream, потому что через StreamReader с ней были бы проблемы.
+                  */
+
+                try
+                {
+                    nextChar = (char)nextValue;
+                }
+                catch
+                {
+                    throw new IndexOutOfRangeException("File is complete !");
+                }
+            }
+            else
+            {
+                IsEof = true;
+            }    
+
+            return nextChar;
         }
 
         /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
+        /// Сбрасывает флаг окончания чтения.
         /// </summary>
         public void ResetPositionToStart()
         {
@@ -51,7 +85,6 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
             IsEof = false;
         }
     }
