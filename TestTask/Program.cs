@@ -133,11 +133,40 @@ namespace TestTask
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
+
+            List<string> RuVowel = new List<string>() { "а", "я", "у", "ю", "о", "е", "ё", "э", "и", "ы" };
+
+            List<string> EnVowel = new List<string>() { "a", "e", "i", "o", "u", "y" };
+
             switch (charType)
             {
                 case CharType.Consonants:
+
+                    for (int i = 0; i < letters.Count; i++)
+                    {
+                        if (!RuVowel.Contains(letters[i].Letter.ToLower()[0].ToString()) && !EnVowel.Contains(letters[i].Letter.ToLower()[0].ToString()))
+                        {
+                            letters.Remove(letters[i]);
+
+                            i--;
+                        }
+                    }
+
+
                     break;
                 case CharType.Vowel:
+
+                    for(int i = 0; i < letters.Count; i++)
+                    {
+                        if (RuVowel.Contains(letters[i].Letter.ToLower()) || EnVowel.Contains(letters[i].Letter.ToLower()))
+                        {
+                            letters.Remove(letters[i]);
+
+                            i--;
+                        }
+
+                    }
+
                     break;
             }
 
