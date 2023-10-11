@@ -53,7 +53,7 @@ namespace TestTask
 
             char nextChar = new char();
 
-            if (nextValue != -1 || !IsEof)
+            if (nextValue != -1)
             {
                 /*
                   *  Не совсем понял как вы хотите чтобы обрабатывалось исключение при попытке 
