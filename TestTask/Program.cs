@@ -96,13 +96,13 @@ namespace TestTask
 
             while (!stream.IsEof)
             {
-                string str = Regex.Match((stream.ReadNextChar()).ToString(), @"[a-zA-Zа-яА-Я]").Value;
+                string str = Regex.Match((stream.ReadNextChar()).ToString(), @"[a-zA-Zа-яА-Я]").Value.ToUpper();
 
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
 
                 if (str != "")
                 {
-                    if ((prevStr != null) && prevStr.ToUpper() == str.ToUpper())
+                    if ((prevStr != null) && prevStr == str)
                     {
                         if (Statistic.Find(x => x.Letter == prevStr + str).Count == 0)
                         {
