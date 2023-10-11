@@ -27,9 +27,16 @@ namespace TestTask
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
-        {
+        {        
             get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
             private set;
+        }
+
+        public void Dispose()
+        {
+            _localStream.Dispose();
+            _localStreamReader.Dispose();
+            IsEof = true;
         }
 
         /// <summary>
@@ -68,7 +75,7 @@ namespace TestTask
             }
             else
             {
-                IsEof = true;
+                Dispose();
             }    
 
             return nextChar;
