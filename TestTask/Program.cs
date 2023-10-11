@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace TestTask
@@ -182,7 +183,17 @@ namespace TestTask
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+
+            letters = letters.OrderBy(x => x.Letter.ToLower()).ToList();
+
+            foreach(LetterStats letter in letters)
+            {
+                Console.WriteLine(letter.Letter + " : " + letter.Count);
+            }
+
+            int sum = letters.Sum(x => x.Count);
+
+            Console.WriteLine("\n" + "Итого : " + sum + "\n");
         }
 
         /// <summary>
