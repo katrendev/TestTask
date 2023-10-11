@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace TestTask
 {
@@ -49,16 +50,33 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            List<LetterStats> Statistic = new List<LetterStats>();
+
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
+                string str = Regex.Match((stream.ReadNextChar()).ToString(), @"[a-zA-Zа-яА-Я]").Value;
+
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+
+                if (str != "")
+                {
+                    if (Statistic.Find(x => x.Letter == str).Count > 0)
+                    {
+                        var index = Statistic.FindIndex(x => x.Letter == str);
+
+                        Statistic[index] = new LetterStats() { Letter = str, Count = Statistic[index].Count + 1 };
+                    }
+                    else
+                    {
+                        Statistic.Add(new LetterStats() { Letter = str, Count = 1 });
+                    }
+
+                    IncStatistic(Statistic.Find(x => x.Letter == str));
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return Statistic;
         }
 
         /// <summary>
@@ -71,15 +89,38 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+
+            List<LetterStats> Statistic = new List<LetterStats>();
+
+            string prevStr = null;
+
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
+                string str = Regex.Match((stream.ReadNextChar()).ToString(), @"[a-zA-Zа-яА-Я]").Value;
+
                 // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+
+                if (str != "")
+                {
+                    if ((prevStr != null) && prevStr.ToUpper() == str.ToUpper())
+                    {
+                        if (Statistic.Find(x => x.Letter == prevStr + str).Count == 0)
+                        {
+                            Statistic.Add(new LetterStats() { Letter = prevStr + str, Count = 1 });
+                        }
+                        else
+                        {
+                            IncStatistic(Statistic.Find(x => x.Letter == prevStr + str));
+                        }
+
+                        IncStatistic(Statistic.Find(x => x.Letter == prevStr + str));
+                    }
+
+                    prevStr = str;
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return Statistic;
         }
 
         /// <summary>
@@ -99,7 +140,7 @@ namespace TestTask
                 case CharType.Vowel:
                     break;
             }
-            
+
         }
 
         /// <summary>
