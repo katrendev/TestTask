@@ -161,7 +161,7 @@ namespace TestTask
 
                     for(int i = 0; i < letters.Count; i++)
                     {
-                        if (RuVowel.Contains(letters[i].Letter.ToLower()) || EnVowel.Contains(letters[i].Letter.ToLower()))
+                        if (RuVowel.Contains(letters[i].Letter.ToLower()[0].ToString()) || EnVowel.Contains(letters[i].Letter.ToLower()[0].ToString()))
                         {
                             letters.Remove(letters[i]);
 
