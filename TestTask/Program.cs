@@ -107,13 +107,15 @@ namespace TestTask
                 {
                     if ((prevStr != null) && prevStr == str)
                     {
-                        if (Statistic.Find(x => x.Letter == prevStr + str).Count == 0)
+                        if (Statistic.Find(x => x.Letter == prevStr + str).Count > 0)
                         {
-                            Statistic.Add(new LetterStats() { Letter = prevStr + str, Count = 1 });
+                            var index = Statistic.FindIndex(x => x.Letter == prevStr + str);
+
+                            Statistic[index] = new LetterStats() { Letter = prevStr + str, Count = Statistic[index].Count + 1 };
                         }
                         else
                         {
-                            IncStatistic(Statistic.Find(x => x.Letter == prevStr + str));
+                            Statistic.Add(new LetterStats() { Letter = prevStr + str, Count = 1 });
                         }
 
                         IncStatistic(Statistic.Find(x => x.Letter == prevStr + str));
