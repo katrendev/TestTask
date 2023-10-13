@@ -189,7 +189,5 @@ namespace TestTask
         /// <param name="letterStats"></param>
         private static void IncStatistic(LetterStats letterStats) 
             => letterStats.Count++;
-
-
     }
 }

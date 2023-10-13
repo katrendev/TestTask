@@ -52,6 +52,10 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
+            if (IsEof)
+            {
+                throw new IOException("Попытка чтения после достижения конца файла.");
+            }
             return (char)_localStream.ReadByte();
         }
 

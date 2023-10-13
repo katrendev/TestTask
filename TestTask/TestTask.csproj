@@ -58,9 +58,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharSize.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="LettersSequence.cs" />
     <Compile Include="CharType.cs" />
-    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IReadOnlyStream.cs" />
     <Compile Include="LetterStats.cs" />
     <Compile Include="Program.cs" />

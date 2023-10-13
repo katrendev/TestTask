@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace TestTask
 {
+    /// <summary>
+    /// Класс, представляет собой некоторую последовательность символов,
+    /// при переполнении заполнение начинается сначала
+    /// </summary>
     public class LettersSequence
     {
         /// <summary>

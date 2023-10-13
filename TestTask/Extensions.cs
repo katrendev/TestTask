@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace TestTask
 {
+    /// <summary>
+    /// Класс для методов расширения.
+    /// </summary>
     public static class Extensions
     {
         /// <summary>
