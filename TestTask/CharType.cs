@@ -13,6 +13,11 @@
         /// <summary>
         /// Согласные
         /// </summary>
-        Consonants
+        Consonants,
+
+        /// <summary>
+        /// Не буква
+        /// </summary>
+        NaL
     }
 }
