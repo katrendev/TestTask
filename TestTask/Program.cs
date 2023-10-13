@@ -68,14 +68,12 @@ namespace TestTask
                     {
                         var index = Statistic.FindIndex(x => x.Letter == str);
 
-                        Statistic[index] = new LetterStats() { Letter = str, Count = Statistic[index].Count + 1 };
+                        Statistic[index] = IncStatistic(Statistic[index]);
                     }
                     else
                     {
                         Statistic.Add(new LetterStats() { Letter = str, Count = 1 });
                     }
-
-                    IncStatistic(Statistic.Find(x => x.Letter == str));
                 }
             }
 
@@ -111,14 +109,12 @@ namespace TestTask
                         {
                             var index = Statistic.FindIndex(x => x.Letter == prevStr + str);
 
-                            Statistic[index] = new LetterStats() { Letter = prevStr + str, Count = Statistic[index].Count + 1 };
+                            Statistic[index] = IncStatistic(Statistic[index]);
                         }
                         else
                         {
                             Statistic.Add(new LetterStats() { Letter = prevStr + str, Count = 1 });
                         }
-
-                        IncStatistic(Statistic.Find(x => x.Letter == prevStr + str));
                     }
 
                     prevStr = str;
@@ -204,9 +200,11 @@ namespace TestTask
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
         /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        private static LetterStats IncStatistic(LetterStats letterStats)
         {
             letterStats.Count++;
+
+            return letterStats;
         }
 
 
