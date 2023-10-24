@@ -19,22 +19,20 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            TemporaryMain("D:\\GitHub\\TestTask\\FirstFile.txt", "D:\\GitHub\\TestTask\\SecondFile.txt");
-        }
-
-        static void TemporaryMain(params string[] args)
-        {
             var statisticHandler = new StatisticHandler();
 
-            IList<LetterStats> singleLetterStats = GetSingleLetterStats(args, statisticHandler);
-            IList<LetterStats> doubleLetterStats = GetDoubleLetterStats(args, statisticHandler);
+            IList<LetterStats> singleLetterStats = GetSingleLetterStats(args[0], statisticHandler);
+            IList<LetterStats> doubleLetterStats = GetDoubleLetterStats(args[1], statisticHandler);
 
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine(_singleStatisticMessage);
             PrintStatistic(singleLetterStats);
 
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(_doubleStatisticMessage);
             PrintStatistic(doubleLetterStats);
 
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(_pressKeyMessage);
             Console.ReadKey();
         }
@@ -45,11 +43,10 @@ namespace TestTask
         /// <param name="args"></param>
         /// <param name="statisticHandler"></param>
         /// <returns></returns>
-        private static IList<LetterStats> GetSingleLetterStats(string[] args, StatisticHandler statisticHandler)
+        private static IList<LetterStats> GetSingleLetterStats(string path, StatisticHandler statisticHandler)
         {
-            return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(args[0]), CharType.Vowel);
+            return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(path), CharType.Vowel);
         }
-
 
         /// <summary>
         /// Получение статистики удвоенных букв
@@ -57,9 +54,9 @@ namespace TestTask
         /// <param name="args"></param>
         /// <param name="statisticHandler"></param>
         /// <returns></returns>
-        private static IList<LetterStats> GetDoubleLetterStats(string[] args, StatisticHandler statisticHandler)
+        private static IList<LetterStats> GetDoubleLetterStats(string path, StatisticHandler statisticHandler)
         {
-            return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(args[1], isDoubleLetterStats: true, ignoreCase: true), CharType.Consonants);
+            return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(path, isDoubleLetterStats: true, ignoreCase: true), CharType.Consonants);
         }
 
         /// <summary>
