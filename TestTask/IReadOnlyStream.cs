@@ -11,6 +11,6 @@
 
         void ResetPositionToStart();
 
-        bool IsEof { get; }
+        bool IsEndOfStream { get; }
     }
 }

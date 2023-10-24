@@ -3,9 +3,10 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
+    public class ReadOnlyStream : IReadOnlyStream, IDisposable
     {
-        private Stream _localStream;
+        private const string EndFileMessage = "The file has reched the end it's impossible to read char";
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,20 +16,14 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = File.OpenText(fileFullPath);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+        public bool IsEndOfStream => _localStream.EndOfStream;
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -39,7 +34,12 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEndOfStream)
+            {
+                throw new EndOfStreamException(EndFileMessage);
+            }
+
+            return (char)_localStream.Read();
         }
 
         /// <summary>
@@ -47,14 +47,13 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
+            if (_localStream != null)
             {
-                IsEof = true;
-                return;
+                _localStream.BaseStream.Position = 0;
+                _localStream.DiscardBufferedData();
             }
-
-            _localStream.Position = 0;
-            IsEof = false;
         }
+
+        public void Dispose() => _localStream.Dispose();
     }
 }

@@ -5,6 +5,9 @@ namespace TestTask
 {
     public class Program
     {
+        private const string _pressKeyMessage = "To continue please press any key on keyboard";
+        private const string _singleStatisticMessage = "Single statistic:";
+        private const string _doubleStatisticMessage = "Double statistic:";
 
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
@@ -16,90 +19,34 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            TemporaryMain("D:\\GitHub\\TestTask\\FirstFile.txt", "D:\\GitHub\\TestTask\\SecondFile.txt");
+        }
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+        static void TemporaryMain(params string[] args)
+        {
+            var statisticHandler = new StatisticHandler();
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            IList<LetterStats> singleLetterStats = GetSingleLetterStats(args, statisticHandler);
+            IList<LetterStats> doubleLetterStats = GetDoubleLetterStats(args, statisticHandler);
 
+            Console.WriteLine(_singleStatisticMessage);
             PrintStatistic(singleLetterStats);
+
+            Console.WriteLine(_doubleStatisticMessage);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.WriteLine(_pressKeyMessage);
+            Console.ReadKey();
         }
 
-        /// <summary>
-        /// Ф-ция возвращает экземпляр потока с уже загруженным файлом для последующего посимвольного чтения.
-        /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        /// <returns>Поток для последующего чтения.</returns>
-        private static IReadOnlyStream GetInputStream(string fileFullPath)
+        private static IList<LetterStats> GetSingleLetterStats(string[] args, StatisticHandler statisticHandler)
         {
-            return new ReadOnlyStream(fileFullPath);
+            return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(args[0]), CharType.Vowel);
         }
 
-        /// <summary>
-        /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения каждой буквы.
-        /// Статистика РЕГИСТРОЗАВИСИМАЯ!
-        /// </summary>
-        /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
-        /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
+        private static IList<LetterStats> GetDoubleLetterStats(string[] args, StatisticHandler statisticHandler)
         {
-            stream.ResetPositionToStart();
-            while (!stream.IsEof)
-            {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
-            }
-
-            //return ???;
-
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Ф-ция считывающая из входящего потока все буквы, и возвращающая коллекцию статистик вхождения парных букв.
-        /// В статистику должны попадать только пары из одинаковых букв, например АА, СС, УУ, ЕЕ и т.д.
-        /// Статистика - НЕ регистрозависимая!
-        /// </summary>
-        /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
-        /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
-        {
-            stream.ResetPositionToStart();
-            while (!stream.IsEof)
-            {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
-            }
-
-            //return ???;
-
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Ф-ция перебирает все найденные буквы/парные буквы, содержащие в себе только гласные или согласные буквы.
-        /// (Тип букв для перебора определяется параметром charType)
-        /// Все найденные буквы/пары соответствующие параметру поиска - удаляются из переданной коллекции статистик.
-        /// </summary>
-        /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
-        /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
-        {
-            // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
-            {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
-            }
-            
+            return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(args[1], isDoubleLetterStats: true, ignoreCase: true), CharType.Consonants);
         }
 
         /// <summary>
@@ -111,19 +58,11 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            foreach (var letter in letters)
+            {
+                Console.WriteLine($"{new string('-', 5)}\nLetter:{letter.Letter}\nCount:{letter.Count}");
+            }
+            Console.WriteLine();
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }
