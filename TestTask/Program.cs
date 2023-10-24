@@ -39,11 +39,24 @@ namespace TestTask
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// Получение статистики одинарных букв
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="statisticHandler"></param>
+        /// <returns></returns>
         private static IList<LetterStats> GetSingleLetterStats(string[] args, StatisticHandler statisticHandler)
         {
             return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(args[0]), CharType.Vowel);
         }
 
+
+        /// <summary>
+        /// Получение статистики удвоенных букв
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="statisticHandler"></param>
+        /// <returns></returns>
         private static IList<LetterStats> GetDoubleLetterStats(string[] args, StatisticHandler statisticHandler)
         {
             return statisticHandler.RemoveCharTypes(statisticHandler.GetLetterStatistic(args[1], isDoubleLetterStats: true, ignoreCase: true), CharType.Consonants);

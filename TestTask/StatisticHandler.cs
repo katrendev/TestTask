@@ -8,32 +8,35 @@ namespace TestTask
         private const string _vowelLetters = "aeiouyаеёийоуыэюя";
         private List<LetterStats> _LetterStats;
 
+        /// <summary>
+        /// Получение статистики букв
+        /// </summary>
+        /// <param name="filePath">Путь к файлу</param>
+        /// <param name="isDoubleLetterStats">Искать удвоенные буквы</param>
+        /// <param name="ignoreCase">Игнорировать регистр</param>
+        /// <returns></returns>
         internal IList<LetterStats> GetLetterStatistic(string filePath, bool isDoubleLetterStats = false, bool ignoreCase = false)
         {
             IList<LetterStats> result = new List<LetterStats>();
-            char lastLetter = default;
+            char lastCharacter = default;
 
             using (var stream = new ReadOnlyStream(filePath))
             {
                 stream.ResetPositionToStart();
                 while (!stream.IsEndOfStream)
                 {
-                    char letter = stream.ReadNextChar();
-                    if (char.IsLetter(letter))
-                    {
-                        if (ignoreCase)
-                        {
-                            letter = char.ToUpper(letter);
-                        }
+                    char character = ignoreCase ? char.ToUpper(stream.ReadNextChar()) : stream.ReadNextChar();
 
-                        if (isDoubleLetterStats && lastLetter != letter)
+                    if (char.IsLetter(character))
+                    {
+                        if (isDoubleLetterStats && lastCharacter != character)
                         {
-                            lastLetter = letter;
+                            lastCharacter = character;
                             continue;
                         }
 
-                        var stringLetter = isDoubleLetterStats ? lastLetter + letter.ToString() : letter.ToString();
-                        var containedValue = result.FirstOrDefault(r => r.Letter == stringLetter);
+                        var letter = isDoubleLetterStats ? lastCharacter + character.ToString() : character.ToString();
+                        var containedValue = result.FirstOrDefault(r => r.Letter == letter);
 
                         if (containedValue != null)
                         {
@@ -43,18 +46,28 @@ namespace TestTask
                         {
                             result.Add(new LetterStats()
                             {
-                                Letter = stringLetter,
+                                Letter = letter,
                                 Count = 1,
                             });
                         }
 
-                        lastLetter = default;
-                    }                    
+                        lastCharacter = default;
+                    }
+                    else
+                    {
+                        lastCharacter = character;
+                    }
                 }
             }
             return result;
         }
 
+        /// <summary>
+        /// Удалить буквы определённого типа
+        /// </summary>
+        /// <param name="letters">Список букв</param>
+        /// <param name="charType">Удаляемый тип</param>
+        /// <returns></returns>
         internal IList<LetterStats> RemoveCharTypes(IList<LetterStats> letters, CharType charType)
         {
             for (int i = 0; i < letters.Count; i++)
