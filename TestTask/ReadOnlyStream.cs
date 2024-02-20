@@ -16,16 +16,22 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения.</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            if (fileFullPath == null)
-                throw new ArgumentNullException(nameof(fileFullPath), "File path cannot be null.");
-
-            _streamReader = new StreamReader(fileFullPath);
+            try
+            {
+                _streamReader = new StreamReader(fileFullPath);
+                IsEof = false;
+            }
+            catch (Exception)
+            {
+                IsEof = true;
+                throw;
+            }
         }
 
         /// <summary>
         /// Флаг, указывающий на окончание файла.
         /// </summary>
-        public bool IsEof => _streamReader.EndOfStream;
+        public bool IsEof { get; private set; }
 
         /// <summary>
         /// Читает следующий символ из потока.
@@ -34,15 +40,17 @@ namespace TestTask
         /// <exception cref="EndOfStreamException">Бросается при достижении конца потока.</exception>
         public char ReadNextChar()
         {
-            if (_streamReader == null || _streamReader.EndOfStream) throw new EndOfStreamException("End of stream reached.");
+            if (IsEof)
+                throw new EndOfStreamException("End of stream reached.");
 
-            using (var reader = _streamReader)
+            int nextChar = _streamReader.Read();
+            if (nextChar == -1)
             {
-                var nextChar = reader.Read();
-                if (nextChar == -1) throw new EndOfStreamException("End of stream reached.");
-
-                return (char)nextChar;
+                IsEof = true;
+                throw new EndOfStreamException("End of stream reached.");
             }
+
+            return (char)nextChar;
         }
 
         /// <summary>
@@ -50,7 +58,14 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            _streamReader?.BaseStream.Seek(0, SeekOrigin.Begin);
+            if (_streamReader == null)
+            {
+                IsEof = true;
+                return;
+            }
+
+            _streamReader.BaseStream.Seek(0, SeekOrigin.Begin);
+            IsEof = false;
         }
 
         /// <summary>
@@ -58,10 +73,7 @@ namespace TestTask
         /// </summary>
         public void Dispose()
         {
-            if (_streamReader == null) return;
-
-            _streamReader.Dispose();
-            _streamReader = null;
+            _streamReader?.Dispose();
         }
     }
 }
