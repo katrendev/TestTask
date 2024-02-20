@@ -3,43 +3,46 @@ using System.IO;
 
 namespace TestTask
 {
+    /// <summary>
+    /// Представляет чтение файла в виде потока с возможностью только чтения.
+    /// </summary>
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _streamReader;
 
         /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+        /// Конструктор класса <see cref="ReadOnlyStream"/>.
         /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
+        /// <param name="fileFullPath">Полный путь до файла для чтения.</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            if (fileFullPath == null)
+                throw new ArgumentNullException(nameof(fileFullPath), "File path cannot be null.");
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _streamReader = new StreamReader(fileFullPath);
         }
-                
+
         /// <summary>
-        /// Флаг окончания файла.
+        /// Флаг, указывающий на окончание файла.
         /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
-        }
+        public bool IsEof => _streamReader.EndOfStream;
 
         /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
+        /// Читает следующий символ из потока.
         /// </summary>
         /// <returns>Считанный символ.</returns>
+        /// <exception cref="EndOfStreamException">Бросается при достижении конца потока.</exception>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_streamReader == null || _streamReader.EndOfStream) throw new EndOfStreamException("End of stream reached.");
+
+            using (var reader = _streamReader)
+            {
+                var nextChar = reader.Read();
+                if (nextChar == -1) throw new EndOfStreamException("End of stream reached.");
+
+                return (char)nextChar;
+            }
         }
 
         /// <summary>
@@ -47,14 +50,18 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            _streamReader?.BaseStream.Seek(0, SeekOrigin.Begin);
+        }
 
-            _localStream.Position = 0;
-            IsEof = false;
+        /// <summary>
+        /// Освобождает ресурсы, связанные с чтением файла.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_streamReader == null) return;
+
+            _streamReader.Dispose();
+            _streamReader = null;
         }
     }
 }
