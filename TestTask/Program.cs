@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace TestTask
 {
@@ -19,16 +21,19 @@ namespace TestTask
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            Dictionary<string, int> singleLetterStats = FillSingleLetterStats(inputStream1);
+            Dictionary<string, int> doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(ref singleLetterStats, CharType.Vowel);
+            RemoveCharStatsByType(ref doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            inputStream1.Dispose();
+            inputStream2.Dispose();
+
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -47,18 +52,18 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
+        private static Dictionary<string, int> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterStats = new Dictionary<string, int>();
+
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                IncLetterIntoDictionary(ref letterStats, c.ToString());
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return letterStats;
         }
 
         /// <summary>
@@ -68,18 +73,40 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static Dictionary<string, int> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            var letterStats = new Dictionary<string, int>();
+
+            char[] pair = new char[2];
+            pair[0] = stream.ReadNextChar();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                pair[1] = stream.ReadNextChar();
+
+                if (char.ToUpper(pair[0]) == char.ToUpper(pair[1]))
+                {
+                    IncLetterIntoDictionary(ref letterStats, string.Concat(pair[0], pair[1]).ToString());
+                }
+                pair[0] = pair[1];
             }
+            return letterStats;
+        }
 
-            //return ???;
 
-            throw new NotImplementedException();
+        /// <summary>
+        /// Добавляет пару ключ значение в словарь, если такой не существует, а в противном
+        /// случае, добавляет к количеству вхождений единицу
+        /// </summary>
+        /// <param name="values">Словарь - статистика</param>
+        /// <param name="key">Вхождение символа или пары</param>
+        private static void IncLetterIntoDictionary(ref Dictionary<string, int> letterStats, string key)
+        {
+            if (!letterStats.ContainsKey(key))
+            {
+                letterStats.Add(key, 1);
+            }
+            else letterStats[key] += 1;
         }
 
         /// <summary>
@@ -89,17 +116,22 @@ namespace TestTask
         /// </summary>
         /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(ref Dictionary<string, int> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
+            char[] vovels = new char[] { 'а', 'е', 'ё', 'и', 'о', 'у', 'ы', 'э', 'ю', 'я', 'a', 'e', 'i', 'o', 'u', 'y' };
             switch (charType)
             {
                 case CharType.Consonants:
+                    {
+                        letters = letters.Where(l => vovels.Contains(l.Key[0])).ToDictionary(l => l.Key, l => l.Value);
+                    }
                     break;
                 case CharType.Vowel:
+                    {
+                        letters = letters.Where(l => !vovels.Contains(l.Key[0]) && !int.TryParse(l.Key[0].ToString(), out int x)).ToDictionary(l => l.Key, l => l.Value);
+                    }
                     break;
             }
-            
         }
 
         /// <summary>
@@ -109,21 +141,13 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        private static void PrintStatistic(Dictionary<string, int> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            foreach (var item in letters.OrderBy(l => l.Key))
+            {
+                Console.WriteLine($"{{{item.Key}}} : {{{item.Value}}}");
+            }
+            Console.WriteLine($"ИТОГО {{{letters.Count}}} : {{{letters.Sum(l => l.Value)}}}");
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }
