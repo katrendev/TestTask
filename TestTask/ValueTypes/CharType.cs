@@ -1,4 +1,4 @@
-﻿namespace TestTask
+﻿namespace TestTask.ValueTypes
 {
     /// <summary>
     /// Тип букв

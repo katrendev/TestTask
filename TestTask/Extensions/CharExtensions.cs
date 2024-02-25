@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace TestTask.Extension
+namespace TestTask.Extensions
 {
     public static class CharExtensions
     {

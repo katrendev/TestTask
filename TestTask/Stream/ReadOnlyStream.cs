@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 
-namespace TestTask
+namespace TestTask.Stream
 {
     /// <summary>
     /// Представляет чтение файла в виде потока с возможностью только чтения.
     /// </summary>
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private readonly Stream _localStream;
+        private readonly System.IO.Stream _localStream;
         private readonly StreamReader _reader;
 
         /// <summary>
