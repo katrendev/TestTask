@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
+
+using TestTask.Stream;
+using TestTask.Extensions;
+using TestTask.ValueTypes;
 
 namespace TestTask
 {
     public class Program
     {
-
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
@@ -14,13 +18,19 @@ namespace TestTask
         /// </summary>
         /// <param name="args">Первый параметр - путь до первого файла.
         /// Второй параметр - путь до второго файла.</param>
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
-
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            IReadOnlyStream inputStream1;
+            IReadOnlyStream inputStream2;
+#if DEBUG
+            inputStream1 = GetInputStream(Samples.Single());
+            inputStream2 = GetInputStream(Samples.Double());
+#else
+            inputStream1 = GetInputStream(args[0]);
+            inputStream2 = GetInputStream(args[1]);
+#endif
+            var singleLetterStats = FillSingleLetterStats(inputStream1);
+            var doubleLetterStats = FillDoubleLetterStats(inputStream2);
 
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
             RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
@@ -28,7 +38,8 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.Write("Нажмите любую клавишу для выхода..."); // as C++: system("pause");
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -50,15 +61,21 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            Dictionary<char, int> charCount = new Dictionary<char, int>();
+
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (char.IsLetter(c))
+                {
+                    char letter = char.ToUpper(c);
+                    if (!charCount.ContainsKey(letter))
+                        charCount[letter] = 0;
+                    charCount[letter]++;
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return charCount.Select(pair => new LetterStats { Letter = pair.Key, Count = pair.Value }).ToList();
         }
 
         /// <summary>
@@ -71,15 +88,23 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            Dictionary<string, int> charPairCount = new Dictionary<string, int>();
+
+            char prevChar = '\0';   
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                if ((char.IsLetter(prevChar) && char.IsLetter(c)) && prevChar == c)
+                {
+                    string charPair = string.Concat(char.ToUpper(prevChar), char.ToUpper(c));
+                    if (!charPairCount.ContainsKey(charPair))
+                        charPairCount[charPair] = 0;
+                    charPairCount[charPair]++;
+                }
+                prevChar = c;
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return charPairCount.Select(pair => new LetterStats { Letter = pair.Key[0], Count = pair.Value }).ToList();
         }
 
         /// <summary>
@@ -91,15 +116,8 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
-            {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
-            }
-            
+            letters.RemoveAll(stat => (charType == CharType.Vowel && stat.Letter.IsConsonant()) ||
+                                      (charType == CharType.Consonants && stat.Letter.IsVowel()));
         }
 
         /// <summary>
@@ -111,19 +129,15 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            var letterStatsEnumerable = letters as LetterStats[] ?? letters.ToArray();
+            foreach (var letterStat in letterStatsEnumerable.OrderBy(stat => stat.Letter))
+            {
+                Console.WriteLine($"{letterStat.Letter} : {letterStat.Count}");
+            }
+
+            int totalCount = letterStatsEnumerable.Sum(stat => stat.Count);
+            Console.WriteLine($"Итого: {totalCount}");
+            Console.WriteLine();
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }
