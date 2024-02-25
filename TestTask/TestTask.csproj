@@ -43,15 +43,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharType.cs" />
-    <Compile Include="IReadOnlyStream.cs" />
-    <Compile Include="LetterStats.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="Samples.cs" />
+    <Compile Include="ValueTypes\CharType.cs" />
+    <Compile Include="Extensions\CharExtensions.cs" />
+    <Compile Include="Stream\IReadOnlyStream.cs" />
+    <Compile Include="ValueTypes\LetterStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadOnlyStream.cs" />
+    <Compile Include="Stream\ReadOnlyStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
