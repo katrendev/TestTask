@@ -9,10 +9,14 @@
         /// Гласные
         /// </summary>
         Vowel,
-
         /// <summary>
         /// Согласные
         /// </summary>
-        Consonants
+        Consonants,
+        /// <summary>
+        /// Буквы не являющиеся ни гласными, ни согласными
+        /// Такие как "Ь" и "Ъ"
+        /// </summary>
+        Special,
     }
 }
