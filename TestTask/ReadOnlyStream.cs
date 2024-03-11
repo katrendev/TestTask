@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
+
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,19 +16,22 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            IsEof = false;       
+            _localStream = new StreamReader(fileFullPath);
         }
-                
+      
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get=>_localStream.EndOfStream; 
+            private set { }
+        }
+
+        public void Dispose()
+        {        
+            _localStream?.Dispose();
         }
 
         /// <summary>
@@ -38,8 +42,13 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream == null)
+                throw new Exception();//здесь нужно сгенерировать своё исключение и обрабатывать
+
+
+           return (char) _localStream.Read();
+
+           
         }
 
         /// <summary>
@@ -48,12 +57,9 @@ namespace TestTask
         public void ResetPositionToStart()
         {
             if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+                throw new Exception();//здесь нужно сгенерировать своё исключение и обрабатывать
 
-            _localStream.Position = 0;
+            _localStream.BaseStream.Position = 0;
             IsEof = false;
         }
     }
