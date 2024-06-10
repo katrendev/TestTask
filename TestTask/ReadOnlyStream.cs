@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
-
+        private readonly Stream _localStream;
+        private readonly byte[] buffer = new byte[1024];
+        private readonly string textFromFile;
+        private int index = 0;
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
@@ -15,18 +18,22 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = File.OpenRead(fileFullPath);
+            buffer = new byte[_localStream.Length];
+            _localStream.Read(buffer, 0, buffer.Length);
+            textFromFile = Encoding.UTF8.GetString(buffer);
         }
-                
+        public void Dispose()
+        {
+            _localStream.Dispose();
+        }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -35,11 +42,21 @@ namespace TestTask
         /// Если произведена попытка прочитать символ после достижения конца файла, метод 
         /// должен бросать соответствующее исключение
         /// </summary>
-        /// <returns>Считанный символ.</returns>
+        /// <returns>Считанный символ.</returns>                
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+                throw new EndOfStreamException("End of file");
+
+            if (index < textFromFile.Length)
+            {
+                char ch = textFromFile[index];
+                index++;
+                return ch;
+            }
+            IsEof = true;
+            
+            return ' ';
         }
 
         /// <summary>
