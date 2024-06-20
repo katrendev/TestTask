@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+
 
 namespace TestTask
 {
@@ -16,19 +18,26 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            IList<LetterStats> singleLetterStats = null;
+            using (IReadOnlyStream inputStream = GetInputStream(args[0]))
+            {
+                singleLetterStats = FillSingleLetterStats(inputStream);
+            }
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            IList<LetterStats> doubleLetterStats = null;
+            using (IReadOnlyStream inputStream = GetInputStream(args[1]))
+            {
+                doubleLetterStats = FillDoubleLetterStats(inputStream);
+            }
 
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
             RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
 
             PrintStatistic(singleLetterStats);
+            Console.WriteLine();
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -50,15 +59,26 @@ namespace TestTask
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            Dictionary<string, LetterStats> letterCount = new Dictionary<string, LetterStats>();
+
             while (!stream.IsEof)
             {
                 char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                if (char.IsLetter(c))
+                {
+                    string stringC = c.ToString();
+                    if (letterCount.ContainsKey(stringC))
+                    {
+                        letterCount[stringC].IncStatistic();
+                    }
+                    else
+                    {
+                        letterCount[stringC] = new LetterStats(stringC);
+                    }
+                }
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return letterCount.Values.ToList();
         }
 
         /// <summary>
@@ -71,15 +91,27 @@ namespace TestTask
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
+            Dictionary<string, LetterStats> doubleLetterCount = new Dictionary<string, LetterStats>();
+
+            char c = stream.ReadNextChar();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char nextChar = stream.ReadNextChar();
+                if (char.IsLetter(c) && char.IsLetter(nextChar) && (char.ToUpper(c) == char.ToUpper(nextChar)))
+                {
+                    string doubleLetter = (char.ToUpper(c).ToString() + char.ToUpper(nextChar).ToString());
+                    if (doubleLetterCount.ContainsKey(doubleLetter))
+                    {
+                        doubleLetterCount[doubleLetter].IncStatistic();
+                    }
+                    else
+                    {
+                        doubleLetterCount[doubleLetter] = new LetterStats(doubleLetter);
+                    }
+                }
+                c = nextChar;
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return doubleLetterCount.Values.ToList();
         }
 
         /// <summary>
@@ -91,15 +123,23 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
+            for (int i = letters.Count - 1; i >= 0; i--)
             {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
+                if ((charType == CharType.Consonants && IsVowel(letters[i].Letter[0])) ||
+                    (charType == CharType.Vowel && !IsVowel(letters[i].Letter[0])))
+                {
+                    letters.RemoveAt(i);
+                }
             }
-            
+        }
+
+        private static bool IsVowel(char letter)
+        {
+            if (!char.IsLetter(letter))
+                return false;
+
+            string vowels = "АЕЁИОУЫЭЮЯаеёиоуыэюя";
+            return vowels.Contains(letter);
         }
 
         /// <summary>
@@ -109,21 +149,14 @@ namespace TestTask
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
         /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        private static void PrintStatistic(IEnumerable<LetterStats> stats)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            foreach (var stat in stats.OrderBy(s => s.Letter))
+            {
+                Console.WriteLine(stat);
+            }
+            int total = stats.Sum(s => s.Count);
+            Console.WriteLine($"ИТОГО: {total}");
         }
-
-        /// <summary>
-        /// Метод увеличивает счётчик вхождений по переданной структуре.
-        /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
-        {
-            letterStats.Count++;
-        }
-
-
     }
 }
