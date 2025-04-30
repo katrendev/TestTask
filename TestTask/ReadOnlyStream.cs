@@ -3,58 +3,83 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
+    public class ReadOnlyStream : IReadOnlyStream, IDisposable
     {
         private Stream _localStream;
+        private StreamReader _reader;
 
-        /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
-        /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
-        }
-                
-        /// <summary>
-        /// Флаг окончания файла.
-        /// </summary>
-        public bool IsEof
-        {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            try
+            {
+                _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+                _reader = new StreamReader(_localStream);
+                IsEof = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка при открытии файла: " + ex.Message);
+                IsEof = true;
+            }
         }
 
-        /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
-        /// </summary>
-        /// <returns>Считанный символ.</returns>
+        public bool IsEof { get; private set; }
+
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Сбрасывает текущую позицию потока на начало.
-        /// </summary>
-        public void ResetPositionToStart()
-        {
-            if (_localStream == null)
+            if (_reader == null)
             {
-                IsEof = true;
-                return;
+                throw new InvalidOperationException("Поток не инициализирован");
             }
 
-            _localStream.Position = 0;
-            IsEof = false;
+            if (_reader.EndOfStream)
+            {
+                IsEof = true;
+                throw new EndOfStreamException("Достигнут конец файла");
+            }
+
+            int value = _reader.Read();
+            if (value == -1)
+            {
+                IsEof = true;
+                throw new EndOfStreamException("Не удалось прочитать символ");
+            }
+
+            if (_reader.EndOfStream)
+            {
+                IsEof = true;
+            }
+
+            return (char)value;
+        }
+
+        public void ResetPositionToStart()
+        {
+            if (_localStream != null && _localStream.CanSeek)
+            {
+                _localStream.Position = 0;
+                _reader.DiscardBufferedData(); // чтобы сбросить буфер
+                IsEof = false;
+            }
+            else
+            {
+                IsEof = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_reader != null)
+            {
+                _reader.Dispose();
+                _reader = null;
+            }
+
+            if (_localStream != null)
+            {
+                _localStream.Dispose();
+                _localStream = null;
+            }
         }
     }
 }
