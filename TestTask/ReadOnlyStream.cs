@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStreamReader;
+        private bool _disposed = false;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,18 +16,23 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            try
+            {
+                _localStreamReader = new StreamReader(File.OpenRead(fileFullPath));
+                IsEof = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +44,17 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ReadOnlyStream));
+
+            int charCode;
+            if ((charCode = _localStreamReader.Read()) != -1)
+            {
+                return (char)charCode;
+            }
+
+            IsEof = true;
+            return '\0';
         }
 
         /// <summary>
@@ -47,14 +62,29 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
+            if (_disposed) throw new ObjectDisposedException(nameof(ReadOnlyStream));
+
+            _localStreamReader.BaseStream.Position = 0;
+            IsEof = false;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
                 return;
+
+            if (disposing)
+            {
+                _localStreamReader?.Dispose();
             }
 
-            _localStream.Position = 0;
-            IsEof = false;
+            _disposed = true;
         }
     }
 }
