@@ -5,7 +5,9 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private FileStream _fileStream;
+        private bool _disposed;
+        private readonly StreamReader _reader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,19 +17,31 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _fileStream = File.OpenRead(fileFullPath);
+            _reader = new StreamReader(_fileStream);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
+        /// 
+        // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                ThrowIfDisposed();
+                return _reader.EndOfStream;
+            }
+        }
+
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _reader.Dispose();
+            _fileStream.Dispose();
+            _disposed = true;
         }
 
         /// <summary>
@@ -39,22 +53,32 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            int value = _reader.Read();
+            if (value == -1)
+            {
+                throw new EndOfStreamException();
+            }
+            return (char)value;
         }
+
+
 
         /// <summary>
         /// Сбрасывает текущую позицию потока на начало.
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            ThrowIfDisposed();
 
-            _localStream.Position = 0;
-            IsEof = false;
+            _reader.DiscardBufferedData();
+            _fileStream.Position = 0;
+        }
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ReadOnlyStream));
         }
     }
 }
