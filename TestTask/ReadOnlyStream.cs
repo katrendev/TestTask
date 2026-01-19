@@ -1,45 +1,60 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace TestTask
 {
+    /// <summary>
+    /// Класс для работы с потоком чтения из текстового файла
+    /// </summary>
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStreamReader;
 
         /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+        /// Конструктор класса <see cref="ReadOnlyStream"/>.
+        /// Должен обеспечивать ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с ним.
         /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
-        {
-            IsEof = true;
+        /// <param name="fileFullPath">полный путь к файлу для чтения</param>
+        public ReadOnlyStream(string fileFullPath) : this(fileFullPath, Encoding.Default) { }
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
-        }
-                
         /// <summary>
-        /// Флаг окончания файла.
+        /// Конструктор класса <see cref="ReadOnlyStream" /> с возможностью указать кодировку файла.
+        /// Должен обеспечивать ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с ним.
+        /// </summary>
+        /// <param name="fileFullPath">полный путь к текстовому файлу для чтения</param>
+        /// <param name="encoding">кодировка текстового файла</param>
+        /// <exception cref="ArgumentNullException">Source file path can't be NULL or empty</exception>
+        /// <exception cref="ArgumentException">Source file doesn't exist"</exception>
+        public ReadOnlyStream(string fileFullPath, Encoding encoding)
+        {
+            if (string.IsNullOrEmpty(fileFullPath))
+            {
+                throw new ArgumentNullException(nameof(fileFullPath), "Source file path can't be NULL or empty");
+            }
+            if (!File.Exists(fileFullPath))
+            {
+                throw new ArgumentException($"Source file \"{fileFullPath}\" doesn't exist", nameof(fileFullPath));
+            }
+            this._localStreamReader = new StreamReader(fileFullPath, encoding);
+        }
+
+        /// <summary>
+        /// Флаг окончания файла
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get { return this._localStreamReader.EndOfStream; }
         }
 
         /// <summary>
-        /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
+        /// Читает следующий символ из потока.
+        /// Выбрасыает <see cref="T:System.IO.IOException"/>, если произведена попытка прочитать символ после достижения конца файла.
         /// </summary>
-        /// <returns>Считанный символ.</returns>
+        /// <returns>считанный символ</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            return (char)this._localStreamReader.Read();
         }
 
         /// <summary>
@@ -47,14 +62,19 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
-
-            _localStream.Position = 0;
-            IsEof = false;
+            this._localStreamReader.BaseStream.Position = 0;
         }
+
+        #region IDisposable
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            this._localStreamReader?.Dispose();
+        }
+
+        #endregion
     }
 }

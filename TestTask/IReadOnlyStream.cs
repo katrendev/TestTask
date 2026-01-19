@@ -1,16 +1,26 @@
-﻿namespace TestTask
+﻿using System;
+
+namespace TestTask
 {
     /// <summary>
-    /// Интерфейс для работы с файлом в сильно урезаном виде.
-    /// Умеет всего 2 вещи: прочитать символ, и перемотать стрим на начало.
+    /// Интерфейс для работы с потоком файла в сильно урезаном виде.
+    /// Обеспечивает всего 2 задачи: прочитать символ и перемотать стрим на начало.
     /// </summary>
-    internal interface IReadOnlyStream
+    internal interface IReadOnlyStream : IDisposable
     {
-        // TODO : Необходимо доработать данный интерфейс для обеспечения гарантированного закрытия файла, по окончанию работы с таковым!
+        /// <summary>
+        /// Флаг окончания файла
+        /// </summary>
+        bool IsEof { get; }
+
+        /// <summary>
+        /// Читает следующий символ из потока.
+        /// </summary>
         char ReadNextChar();
 
+        /// <summary>
+        /// Сбрасывает текущую позицию потока на начало.
+        /// </summary>
         void ResetPositionToStart();
-
-        bool IsEof { get; }
     }
 }

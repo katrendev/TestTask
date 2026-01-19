@@ -5,7 +5,6 @@ namespace TestTask
 {
     public class Program
     {
-
         /// <summary>
         /// Программа принимает на входе 2 пути до файлов.
         /// Анализирует в первом файле кол-во вхождений каждой буквы (регистрозависимо). Например А, б, Б, Г и т.д.
@@ -16,19 +15,38 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            string firstFilePath = args[0];
+            string secondFilePath = args[1];
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            //IReadOnlyStream inputStream1 = GetInputStream(args[0]);
+            //IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            var singleLetterTextScanner = new TextScanner(firstFilePath)
+            {
+                CaseSensitive = true,
+                SearchKind = SearchKind.SingleLetters
+            };
+            var doubleLetterTextScanner = new TextScanner(secondFilePath)
+            {
+                CaseSensitive = false,
+                SearchKind = SearchKind.DoubleLetters
+            };
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            //IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
+            //IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            var singleLetterSearchResult = singleLetterTextScanner.Search();
+            var doubleLetterSearchResult = doubleLetterTextScanner.Search();
 
-            PrintStatistic(singleLetterStats);
-            PrintStatistic(doubleLetterStats);
+            //RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
+            //RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            singleLetterSearchResult.ExcludeLettersByCharType(CharType.Vowel);
+            doubleLetterSearchResult.ExcludeLettersByCharType(CharType.Consonants);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            PrintStatistic(singleLetterSearchResult);
+            PrintStatistic(doubleLetterSearchResult);
+
+            // Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -108,11 +126,10 @@ namespace TestTask
         /// Выводить на экран необходимо предварительно отсортировав набор по алфавиту.
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
-        /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        /// <param name="searchResult">результат со статистикой поиска</param>
+        private static void PrintStatistic(SearchResult searchResult)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            Console.WriteLine(searchResult.ToString());
         }
 
         /// <summary>
@@ -123,7 +140,5 @@ namespace TestTask
         {
             letterStats.Count++;
         }
-
-
     }
 }
