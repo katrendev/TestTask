@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.IO.Pipes;
+using System.Runtime.Remoting.Messaging;
+using System.Text;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
+    public class ReadOnlyStream : IReadOnlyStream, IDisposable
     {
         private Stream _localStream;
 
@@ -16,9 +19,18 @@ namespace TestTask
         public ReadOnlyStream(string fileFullPath)
         {
             IsEof = true;
-
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        }
+        ~ReadOnlyStream() 
+        {
+            Close();
+        }
+
+        private bool isEof
+        {
+            get; set;
         }
                 
         /// <summary>
@@ -26,9 +38,26 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get 
+            {
+                return _localStream.Length <= _localStream.Position;
+            } // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            private set
+            {
+                isEof = value;
+            }
         }
+
+        public void Close()
+        {
+            _localStream.Close();
+        }
+
+        public void Dispose()
+        {
+            _localStream?.Dispose();
+        }
+
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
@@ -39,7 +68,12 @@ namespace TestTask
         public char ReadNextChar()
         {
             // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            var readByte = _localStream.ReadByte();
+            if(readByte == -1)
+            {
+                throw new EndOfStreamException();
+            }
+            return (char)readByte;
         }
 
         /// <summary>
@@ -52,8 +86,20 @@ namespace TestTask
                 IsEof = true;
                 return;
             }
+            
+            byte[] bom = new byte[3];
+            int n = _localStream.Read(bom, 0, bom.Length);
 
-            _localStream.Position = 0;
+            //Handling BOM
+            if (n == 3 && (bom[0] & 0xFF) == 0xEF && (bom[1] & 0xFF) == 0xBB && (bom[2] & 0xFF) == 0xBF)
+            {
+                _localStream.Position = bom.Length;
+            }
+            else
+            {
+                _localStream.Position = 0;
+            }
+            
             IsEof = false;
         }
     }
