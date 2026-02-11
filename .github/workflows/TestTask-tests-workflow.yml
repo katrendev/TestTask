@@ -1,0 +1,21 @@
+name: TestTask Build and Test  # Имя workflow, отображается в интерфейсе GitHub Actions
+on: 
+  push:  # Запускается при каждом push в репозиторий
+    branches:
+      - master # ветки, для которых нужно запускать тесты
+
+jobs:  # Определяет набор задач (jobs), которые будут выполнены
+  service-build:  # Имя задачи
+    runs-on: windows-latest  # на каком окружении будет выполняться задача
+    steps:  # Список шагов, которые будут выполнены в рамках задачи
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Restore NuGet packages
+        run: |
+          nuget restore TestTask\TestTask.sln # Ваш sln-файл решения
+      - name: Build solution
+        run: |
+          & "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\msbuild.exe" /m TestTask\TestTask.sln # Сборка решения
+      - name: Run tests
+        working-directory: TestTask.UnitTests
+        run: dotnet test TestTask.UnitTests.csproj --verbosity normal  # Выполняет команду dotnet test для запуска юнит-тестов
