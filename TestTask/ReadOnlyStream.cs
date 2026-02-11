@@ -3,31 +3,74 @@ using System.IO;
 
 namespace TestTask
 {
-    public class ReadOnlyStream : IReadOnlyStream
+    public class ReadOnlyStream : IReadOnlyStream, IDisposable
     {
-        private Stream _localStream;
+        private bool _disposed;
+        private TextReader _reader;
+        private readonly Func<TextReader> _makeReader;
+
+        /// <summary>
+        /// Создает стрим для чтения из файла
+        /// </summary>
+        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
+        public static IReadOnlyStream ForFile(string fileFullPath)
+        {
+            return new ReadOnlyStream(() => new StreamReader(fileFullPath));
+        }
+
+        /// <summary>
+        /// Создает стрим для чтения из строки (используется в тестах)
+        /// </summary>
+        public static IReadOnlyStream ForString(string content)
+        {
+            return new ReadOnlyStream(() => new StringReader(content));
+        }
 
         /// <summary>
         /// Конструктор класса. 
         /// Т.к. происходит прямая работа с файлом, необходимо 
         /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
-        /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        /// <param name="makeReader">Функия-фабрика ридеров</param>
+        private ReadOnlyStream(Func<TextReader> makeReader)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _makeReader = makeReader;
+            _reader = _makeReader();
         }
-                
+
+        public void Dispose()
+        {
+            if (_reader != null)
+            {
+                _reader.Dispose();
+                _reader = null;
+            }
+            _disposed = true;
+        }
+
+        ~ReadOnlyStream()
+        { 
+            Dispose();
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
-            private set;
+            get
+            {
+                ThrowIfDisposed();
+                return _reader.Peek() == -1;
+            }
         }
 
         /// <summary>
@@ -38,8 +81,15 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            var charCode = _reader.Read();
+            if (charCode < 0)
+            {
+                throw new EndOfStreamException();
+            }
+
+            return (char)charCode;
         }
 
         /// <summary>
@@ -47,14 +97,15 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            ThrowIfDisposed();
 
-            _localStream.Position = 0;
-            IsEof = false;
+            // NOTE: Если бы использовать StreamReader напрямую, то можно было бы просто
+            // _reader.BaseStream.Position = 0
+            // _reader.DiscardBufferedData()
+            // Но мы используем TextReader, чтобы проще писать тесты
+            // поэтому проще всего пересоздать его
+            _reader.Dispose();
+            _reader = _makeReader();
         }
     }
 }
