@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TestTask
 {
@@ -25,33 +26,23 @@ namespace TestTask
                     Console.WriteLine("ОШИБКА: Неверное количество аргументов. Требуется указать пути к двум файлам.");
                     return;
                 }
-
-                var filePath1 = Path.GetFullPath(args[0]);
-                var filePath2 = Path.GetFullPath(args[1]);
-
-                Console.WriteLine($"Обработка {filePath1} ...");
-                using (IReadOnlyStream inputStream1 = GetInputStream(filePath1))
-                {
-                    IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-                    RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-                    PrintStatistic(singleLetterStats);
-                }
-
-                Console.WriteLine($"Обработка {filePath2} ...");
-                using (IReadOnlyStream inputStream2 = GetInputStream(filePath2))
-                {
-                    IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
-                    RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
-                    PrintStatistic(doubleLetterStats);
-                }
+                // Обработка файлов никак не связана друг с другом, так что можно делать одновременно
+                Task.WaitAll(
+                    ProcessFile(args[0], FillSingleLetterStats, CharType.Vowel),
+                    ProcessFile(args[1], FillDoubleLetterStats, CharType.Consonants)
+                );
             }
-            catch (FileNotFoundException ex)
+            catch (AggregateException ex)
             {
-                // Эта ошибка полезна для пользователя,
-                // поэтому ообрабатываем ее отдельно и показываем короткое сообщение.
-                // Остальные исключение - это внутренние ошибки,которые ничего не скажут пользователю
-                // поэтому пусть для них выводится стандартный стек-трейс для отправки его разработчику
-                Console.WriteLine(ex.Message);
+                if (ex.InnerException is FileNotFoundException)
+                {
+                    // Эта ошибка понятна и полезна для пользователя,
+                    // поэтому ообрабатываем ее отдельно и показываем короткое сообщение.
+                    // Остальные исключение - это внутренние ошибки, которые ничего не скажут пользователю
+                    // поэтому пусть для них выводится стандартный стек-трейс для отправки его разработчику
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                else throw;
             }
             finally
             {
@@ -59,6 +50,27 @@ namespace TestTask
                 Console.WriteLine("Для завершения, нажмите любую клавишу...");
                 Console.ReadKey(true);
             }
+        }
+
+        private static readonly object _consoleLocker = new object();
+
+        private static Task ProcessFile(string filePath, Func<IReadOnlyStream, IList<LetterStats>> calcStats, CharType charType)
+        {
+            return Task.Run(() =>
+            {
+                var fileFullPath = Path.GetFullPath(filePath);
+                Console.WriteLine($"Обработка {fileFullPath} ...");
+                using (var stream = GetInputStream(fileFullPath))
+                { 
+                    var stats = calcStats(stream);
+                    RemoveCharStatsByType(stats, charType);
+                    lock (_consoleLocker)
+                    {
+                        Console.WriteLine($"Статистика для {fileFullPath}");
+                        PrintStatistic(stats);
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -94,6 +106,9 @@ namespace TestTask
                     stat = new LetterStats { Letter = ch.ToString() };
                 }
                 // заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                // NOTE: оптимальнее было бы просто собирать статистику в Dictionary<char, int>
+                // тогда можно избежать копирования структур и передачи во внешнюю функцию-счетчик
+                // А финальный список структур собрать уже в последний момент.
                 IncStatistic(ref stat);
                 dict[ch] = stat;
             }
@@ -132,6 +147,9 @@ namespace TestTask
                     stat = new LetterStats { Letter = $"{ch}{ch}" };
                 }
                 // заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                // NOTE: оптимальнее было бы просто собирать статистику в Dictionary<char, int>
+                // тогда можно избежать копирования структур и передачи во внешнюю функцию-счетчик
+                // А финальный список структур собрать уже в последний момент.
                 IncStatistic(ref stat);
                 dict[ch] = stat;
                 prevCh = null;
