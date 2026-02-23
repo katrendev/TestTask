@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        // использовали StreamReader потому, что оно корректно работает с `char` и кодировкой
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +16,9 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            // при создании открываем файл на чтение
+            _localStream = new StreamReader(fileFullPath);
+            IsEof = false;
         }
                 
         /// <summary>
@@ -26,7 +26,7 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +38,19 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream == null)
+            {
+                throw new ObjectDisposedException(nameof(ReadOnlyStream));
+            }
+
+            int result = _localStream.Read();
+            if (result == -1)
+            {
+                IsEof = true;
+                throw new EndOfStreamException("Attempted to read past end of stream");
+            }
+
+            return (char)result;
         }
 
         /// <summary>
@@ -53,8 +64,19 @@ namespace TestTask
                 return;
             }
 
-            _localStream.Position = 0;
+            _localStream.BaseStream.Seek(0, SeekOrigin.Begin);
+            _localStream.DiscardBufferedData();
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Закрывает внутренний поток.
+        /// </summary>
+        public void Dispose()
+        {
+            _localStream?.Dispose();
+            _localStream = null;
+            IsEof = true;
         }
     }
 }
