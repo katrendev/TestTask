@@ -1,17 +1,9 @@
-##игнорируем сам .gitignore
-#.gitignore
-
-### игнорируем конкретный тип файлов
-## *.html
-###… кроме определенного файла
-## !special.html
-### можно использовать рег.выражения.
-## *.[ao]
-
-
 *.suo
 *.user
 .vs/
 bin/
 obj/
 packages/
+
+# Terminal Paste Image folder
+.cp-images/
