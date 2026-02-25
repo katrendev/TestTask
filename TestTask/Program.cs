@@ -12,15 +12,16 @@ namespace TestTask
         /// Анализирует во втором файле кол-во вхождений парных букв (не регистрозависимо). Например АА, Оо, еЕ, тт и т.д.
         /// По окончанию работы - выводит данную статистику на экран.
         /// </summary>
-        /// <param name="args">Первый параметр - путь до первого файла.
-        /// Второй параметр - путь до второго файла.</param>
+        /// <param name="args">Массив аргументов командной строки:
+        /// args[0] - путь до первого файла,
+        /// args[1] - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream inputStream1 = GetInputStream(args[0]);
-            IReadOnlyStream inputStream2 = GetInputStream(args[1]);
+            IReadOnlyStream singleLetterStream = GetInputStream(args[0]);
+            IReadOnlyStream doubleLetterStream = GetInputStream(args[1]);
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(inputStream1);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(inputStream2);
+            IList<LetterStats> singleLetterStats = FillSingleLetterStats(singleLetterStream);
+            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(doubleLetterStream);
 
             RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
             RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
