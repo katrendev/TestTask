@@ -99,7 +99,7 @@ namespace TestTask
                 case CharType.Vowel:
                     break;
             }
-            
+
         }
 
         /// <summary>

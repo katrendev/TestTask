@@ -20,7 +20,7 @@ namespace TestTask
             // TODO : Заменить на создание реального стрима для чтения файла!
             _localStream = null;
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
