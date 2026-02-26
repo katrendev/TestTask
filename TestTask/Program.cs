@@ -17,17 +17,17 @@ namespace TestTask
         /// args[1] - путь до второго файла.</param>
         static void Main(string[] args)
         {
-            IReadOnlyStream singleLetterStream = GetInputStream(args[0]);
-            IReadOnlyStream doubleLetterStream = GetInputStream(args[1]);
+            IReadOnlyStream singleCharStream = GetInputStream(args[0]);
+            IReadOnlyStream doubleCharStream = GetInputStream(args[1]);
 
-            IList<LetterStats> singleLetterStats = FillSingleLetterStats(singleLetterStream);
-            IList<LetterStats> doubleLetterStats = FillDoubleLetterStats(doubleLetterStream);
+            IList<CharStats> singleCharStats = FillSingleCharStats(singleCharStream);
+            IList<CharStats> doubleCharStats = FillDoubleCharStats(doubleCharStream);
 
-            RemoveCharStatsByType(singleLetterStats, CharType.Vowel);
-            RemoveCharStatsByType(doubleLetterStats, CharType.Consonants);
+            RemoveCharStatsByType(singleCharStats, CharType.Vowel);
+            RemoveCharStatsByType(doubleCharStats, CharType.Consonants);
 
-            PrintStatistic(singleLetterStats);
-            PrintStatistic(doubleLetterStats);
+            PrintStatistic(singleCharStats);
+            PrintStatistic(doubleCharStats);
 
             Console.ReadKey();
         }
@@ -48,7 +48,7 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
+        private static IList<CharStats> FillSingleCharStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
             while (!stream.IsEof)
@@ -69,7 +69,7 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
+        private static IList<CharStats> FillDoubleCharStats(IReadOnlyStream stream)
         {
             stream.ResetPositionToStart();
             while (!stream.IsEof)
@@ -88,9 +88,9 @@ namespace TestTask
         /// (Тип букв для перебора определяется параметром charType)
         /// Все найденные буквы/пары соответствующие параметру поиска - удаляются из переданной коллекции статистик.
         /// </summary>
-        /// <param name="letters">Коллекция со статистиками вхождения букв/пар</param>
+        /// <param name="stats">Коллекция со статистиками вхождения букв/пар</param>
         /// <param name="charType">Тип букв для анализа</param>
-        private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
+        private static void RemoveCharStatsByType(IList<CharStats> stats, CharType charType)
         {
             // TODO : Удалить статистику по запрошенному типу букв.
             switch (charType)
@@ -109,8 +109,8 @@ namespace TestTask
         /// Выводить на экран необходимо предварительно отсортировав набор по алфавиту.
         /// В конце отдельная строчка с ИТОГО, содержащая в себе общее кол-во найденных букв/пар
         /// </summary>
-        /// <param name="letters">Коллекция со статистикой</param>
-        private static void PrintStatistic(IEnumerable<LetterStats> letters)
+        /// <param name="stats">Коллекция со статистикой</param>
+        private static void PrintStatistic(IEnumerable<CharStats> stats)
         {
             // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
             throw new NotImplementedException();
@@ -119,10 +119,10 @@ namespace TestTask
         /// <summary>
         /// Метод увеличивает счётчик вхождений по переданной структуре.
         /// </summary>
-        /// <param name="letterStats"></param>
-        private static void IncStatistic(LetterStats letterStats)
+        /// <param name="charStats"></param>
+        private static void IncStatistic(CharStats charStats)
         {
-            letterStats.Count++;
+            charStats.Count++;
         }
 
 

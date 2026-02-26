@@ -3,12 +3,12 @@
     /// <summary>
     /// Статистика вхождения буквы/пары букв
     /// </summary>
-    public struct LetterStats
+    public struct CharStats
     {
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
         /// </summary>
-        public string Letter;
+        public string Char;
 
         /// <summary>
         /// Кол-во вхождений буквы/пары.
