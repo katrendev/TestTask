@@ -5,7 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private Stream _fileStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -18,7 +18,7 @@ namespace TestTask
             IsEof = true;
 
             // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _fileStream = null;
         }
 
         /// <summary>
@@ -47,13 +47,13 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
+            if (_fileStream == null)
             {
                 IsEof = true;
                 return;
             }
 
-            _localStream.Position = 0;
+            _fileStream.Position = 0;
             IsEof = false;
         }
     }
