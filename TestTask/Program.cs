@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace TestTask
@@ -124,7 +124,5 @@ namespace TestTask
         {
             charStats.Count++;
         }
-
-
     }
 }

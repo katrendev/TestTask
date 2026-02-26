@@ -1,9 +1,9 @@
-﻿namespace TestTask
+namespace TestTask
 {
     /// <summary>
     /// Статистика вхождения буквы/пары букв
     /// </summary>
-    public struct CharStats
+    public class CharStats
     {
         /// <summary>
         /// Буква/Пара букв для учёта статистики.
