@@ -4,6 +4,11 @@ using System.Linq;
 
 namespace TestTask
 {
+    /*
+        NOTE: В production-коде методы стоило бы вынести в отдельные классы по ответственностям:
+        StatisticsCollector (CollectSingle/DoubleCharStats), StatisticsFilter (RemoveCharStatsByType),
+        StatisticsPrinter (PrintStatistic)
+    */
     public class Program
     {
 
