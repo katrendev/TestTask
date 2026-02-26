@@ -8,17 +8,15 @@ namespace TestTask
         private readonly StreamReader _fileStream;
 
         /// <summary>
-        /// Конструктор класса. 
-        /// Т.к. происходит прямая работа с файлом, необходимо 
+        /// Конструктор класса.
+        /// Т.к. происходит прямая работа с файлом, необходимо
         /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _fileStream = null;
+            _fileStream = new StreamReader(fileFullPath);
+            IsEof = false;
         }
 
         /// <summary>
@@ -26,20 +24,31 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
         /// <summary>
         /// Ф-ция чтения следующего символа из потока.
-        /// Если произведена попытка прочитать символ после достижения конца файла, метод 
-        /// должен бросать соответствующее исключение
+        /// Если произведена попытка прочитать символ после достижения конца файла, метод
+        /// бросит соответствующее исключение
         /// </summary>
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+            {
+                throw new InvalidOperationException("Stream is already at end of file");
+            }
+
+            var nextChar = (char)_fileStream.Read();
+
+            if (_fileStream.EndOfStream)
+            {
+                IsEof = true;
+            }
+
+            return nextChar;
         }
 
         /// <summary>
