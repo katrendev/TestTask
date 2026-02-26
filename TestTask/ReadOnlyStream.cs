@@ -5,7 +5,8 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private readonly FileStream _fileStream;
+        private readonly StreamReader _reader;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,18 +16,18 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
+            _fileStream = File.OpenRead(fileFullPath);
+            _reader = new StreamReader(_fileStream);
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            ResetPositionToStart();
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +39,21 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof)
+                throw new EndOfStreamException();
+
+            int value = _reader.Read();
+
+            if (value == -1)
+            {
+                IsEof = true;
+                throw new EndOfStreamException();
+            }
+
+            if (_reader.Peek() == -1)
+                IsEof = true;
+
+            return (char)value;
         }
 
         /// <summary>
@@ -47,14 +61,15 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
+            _fileStream.Position = 0;
+            _reader.DiscardBufferedData();
+            IsEof = _reader.Peek() == -1;
+        }
 
-            _localStream.Position = 0;
-            IsEof = false;
+        public void Dispose()
+        {
+            _reader?.Dispose();
+            _fileStream?.Dispose();
         }
     }
 }

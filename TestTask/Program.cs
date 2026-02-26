@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestTask
 {
@@ -16,6 +17,14 @@ namespace TestTask
         /// Второй параметр - путь до второго файла.</param>
         static void Main(string[] args)
         {
+            if (args == null || args.Length < 2)
+            {
+                Console.WriteLine("Нужно передать 2 параметра: <путь_к_файлу_1> <путь_к_файлу_2>");
+                Console.WriteLine("Пример: TestTask.exe \"C:\\temp\\1.txt\" \"C:\\temp\\2.txt\"");
+                Console.ReadKey();
+                return;
+            }
+
             IReadOnlyStream inputStream1 = GetInputStream(args[0]);
             IReadOnlyStream inputStream2 = GetInputStream(args[1]);
 
@@ -28,7 +37,7 @@ namespace TestTask
             PrintStatistic(singleLetterStats);
             PrintStatistic(doubleLetterStats);
 
-            // TODO : Необжодимо дождаться нажатия клавиши, прежде чем завершать выполнение программы.
+            Console.ReadKey();
         }
 
         /// <summary>
@@ -49,16 +58,32 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillSingleLetterStats(IReadOnlyStream stream)
         {
+            var dict = new Dictionary<string, LetterStats>();
+
             stream.ResetPositionToStart();
+
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                char c;
+
+                try { c = stream.ReadNextChar(); }
+                catch { break; }
+
+                if (!char.IsLetter(c))
+                    continue;
+
+                string key = c.ToString();
+
+                if (!dict.TryGetValue(key, out var stat))
+                {
+                    stat = new LetterStats { Letter = key };
+                    dict[key] = stat;
+                }
+
+                IncStatistic(stat);
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return dict.Values.ToList();
         }
 
         /// <summary>
@@ -70,16 +95,44 @@ namespace TestTask
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
         private static IList<LetterStats> FillDoubleLetterStats(IReadOnlyStream stream)
         {
+            var dict = new Dictionary<string, LetterStats>();
+
             stream.ResetPositionToStart();
+
+            char? prev = null;
+
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char c;
+
+                try { c = stream.ReadNextChar(); }
+                catch { break; }
+
+                if (!char.IsLetter(c))
+                {
+                    prev = null;
+                    continue;
+                }
+
+                if (prev.HasValue &&
+                    char.ToUpperInvariant(prev.Value) == char.ToUpperInvariant(c))
+                {
+                    char up = char.ToUpperInvariant(c);
+                    string key = new string(new[] { up, up });
+
+                    if (!dict.TryGetValue(key, out var stat))
+                    {
+                        stat = new LetterStats { Letter = key };
+                        dict[key] = stat;
+                    }
+
+                    IncStatistic(stat);
+                }
+
+                prev = c;
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return dict.Values.ToList();
         }
 
         /// <summary>
@@ -91,15 +144,22 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<LetterStats> letters, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
+            for (int i = letters.Count - 1; i >= 0; i--)
             {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
+                var item = letters[i];
+
+                bool match = item.Letter.All(c =>
+                    charType == CharType.Vowel ? IsVowel(c) : !IsVowel(c));
+
+                if (match)
+                    letters.RemoveAt(i);
             }
-            
+        }
+
+        private static bool IsVowel(char c)
+        {
+            c = char.ToUpperInvariant(c);
+            return "AEIOUYАЕЁИОУЫЭЮЯ".Contains(c);
         }
 
         /// <summary>
@@ -111,8 +171,26 @@ namespace TestTask
         /// <param name="letters">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<LetterStats> letters)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            if (letters == null)
+            {
+                Console.WriteLine("ИТОГО : 0");
+                return;
+            }
+
+            var ordered = letters
+                .Where(x => x != null && !string.IsNullOrEmpty(x.Letter))
+                .OrderBy(x => x.Letter, StringComparer.CurrentCulture)
+                .ToList();
+
+            int total = 0;
+
+            foreach (var item in ordered)
+            {
+                Console.WriteLine($"{item.Letter} : {item.Count}");
+                total += item.Count;
+            }
+
+            Console.WriteLine($"ИТОГО : {total}");
         }
 
         /// <summary>
