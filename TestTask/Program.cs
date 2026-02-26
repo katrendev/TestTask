@@ -156,8 +156,16 @@ namespace TestTask
         /// <param name="stats">Коллекция со статистикой</param>
         private static void PrintStatistic(IEnumerable<CharStats> stats)
         {
-            // TODO : Выводить на экран статистику. Выводить предварительно отсортировав по алфавиту!
-            throw new NotImplementedException();
+            var sorted = stats.OrderBy(stat => stat.Char);
+            int total = 0;
+
+            foreach (var stat in sorted)
+            {
+                Console.WriteLine($"{stat.Char} : {stat.Count}");
+                total += stat.Count;
+            }
+
+            Console.WriteLine($"ИТОГО : {total}");
         }
 
         /// <summary>
