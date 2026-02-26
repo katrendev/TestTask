@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestTask
 {
@@ -20,7 +21,7 @@ namespace TestTask
             IReadOnlyStream singleCharStream = GetInputStream(args[0]);
             IReadOnlyStream doubleCharStream = GetInputStream(args[1]);
 
-            IList<CharStats> singleCharStats = FillSingleCharStats(singleCharStream);
+            IList<CharStats> singleCharStats = CollectSingleCharStats(singleCharStream);
             IList<CharStats> doubleCharStats = FillDoubleCharStats(doubleCharStream);
 
             RemoveCharStatsByType(singleCharStats, CharType.Vowel);
@@ -48,18 +49,34 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<CharStats> FillSingleCharStats(IReadOnlyStream stream)
+        private static IList<CharStats> CollectSingleCharStats(IReadOnlyStream stream)
         {
+            var stats = new List<CharStats>();
+
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - регистрозависимый.
+                char currentChar = stream.ReadNextChar();
+
+                if (!char.IsLetter(currentChar))
+                {
+                    continue;
+                }
+
+                var stat = stats.FirstOrDefault(stat => stat.Char == currentChar.ToString());
+
+                if (stat == null)
+                {
+                    stats.Add(new CharStats { Char = currentChar.ToString(), Count = 1 });
+                }
+
+                else
+                {
+                    IncStatistic(stat);
+                }
+
             }
-
-            //return ???;
-
-            throw new NotImplementedException();
+            return stats;
         }
 
         /// <summary>
