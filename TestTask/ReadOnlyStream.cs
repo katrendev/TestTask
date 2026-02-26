@@ -9,8 +9,7 @@ namespace TestTask
 
         /// <summary>
         /// Конструктор класса.
-        /// Т.к. происходит прямая работа с файлом, необходимо
-        /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
+        /// Класс реализует IDisposable — используйте using/Dispose для гарантированного закрытия файла.
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
@@ -64,6 +63,15 @@ namespace TestTask
             _fileStream.BaseStream.Position = 0;
             _fileStream.DiscardBufferedData();
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Освобождает ресурсы и закрывает файл.
+        /// </summary>
+        public void Dispose()
+        {
+            _fileStream.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
