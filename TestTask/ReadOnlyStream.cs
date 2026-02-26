@@ -49,8 +49,7 @@ namespace TestTask
         {
             if (_fileStream == null)
             {
-                IsEof = true;
-                return;
+                throw new InvalidOperationException("Stream is not initialized.");
             }
 
             _fileStream.Position = 0;
