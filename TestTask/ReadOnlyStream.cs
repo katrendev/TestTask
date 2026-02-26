@@ -5,7 +5,7 @@ namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _fileStream;
+        private readonly StreamReader _fileStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -52,7 +52,8 @@ namespace TestTask
                 throw new InvalidOperationException("Stream is not initialized.");
             }
 
-            _fileStream.Position = 0;
+            _fileStream.BaseStream.Position = 0;
+            _fileStream.DiscardBufferedData();
             IsEof = false;
         }
     }
