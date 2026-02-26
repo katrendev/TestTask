@@ -134,15 +134,17 @@ namespace TestTask
         /// <param name="charType">Тип букв для анализа</param>
         private static void RemoveCharStatsByType(IList<CharStats> stats, CharType charType)
         {
-            // TODO : Удалить статистику по запрошенному типу букв.
-            switch (charType)
+            for (int i = stats.Count - 1; i >= 0; i--)
             {
-                case CharType.Consonants:
-                    break;
-                case CharType.Vowel:
-                    break;
-            }
+                bool isVowel = CharTypeHelper.IsVowel(stats[i].Char[0]);
 
+                bool shouldRemove = charType == CharType.Vowel ? isVowel : !isVowel;
+
+                if (shouldRemove)
+                {
+                    stats.RemoveAt(i);
+                }
+            }
         }
 
         /// <summary>
