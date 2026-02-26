@@ -22,7 +22,7 @@ namespace TestTask
             IReadOnlyStream doubleCharStream = GetInputStream(args[1]);
 
             IList<CharStats> singleCharStats = CollectSingleCharStats(singleCharStream);
-            IList<CharStats> doubleCharStats = FillDoubleCharStats(doubleCharStream);
+            IList<CharStats> doubleCharStats = CollectDoubleCharStats(doubleCharStream);
 
             RemoveCharStatsByType(singleCharStats, CharType.Vowel);
             RemoveCharStatsByType(doubleCharStats, CharType.Consonants);
@@ -86,18 +86,43 @@ namespace TestTask
         /// </summary>
         /// <param name="stream">Стрим для считывания символов для последующего анализа</param>
         /// <returns>Коллекция статистик по каждой букве, что была прочитана из стрима.</returns>
-        private static IList<CharStats> FillDoubleCharStats(IReadOnlyStream stream)
+        private static IList<CharStats> CollectDoubleCharStats(IReadOnlyStream stream)
         {
+            var stats = new List<CharStats>();
+            bool prevWasLetter = false;
+            char prevChar = default;
+
             stream.ResetPositionToStart();
             while (!stream.IsEof)
             {
-                char c = stream.ReadNextChar();
-                // TODO : заполнять статистику с использованием метода IncStatistic. Учёт букв - НЕ регистрозависимый.
+                char currentChar = stream.ReadNextChar();
+
+                if (!char.IsLetter(currentChar))
+                {
+                    prevWasLetter = false;
+                    continue;
+                }
+
+                if (prevWasLetter && char.ToLower(prevChar) == char.ToLower(currentChar))
+                {
+                    var pairKey = new string(char.ToLower(currentChar), 2);
+                    var stat = stats.FirstOrDefault(stat => stat.Char == pairKey);
+                    if (stat == null)
+                    {
+                        stats.Add(new CharStats { Char = pairKey, Count = 1 });
+                    }
+
+                    else
+                    {
+                        IncStatistic(stat);
+                    }
+                }
+
+                prevChar = currentChar;
+                prevWasLetter = true;
             }
 
-            //return ???;
-
-            throw new NotImplementedException();
+            return stats;
         }
 
         /// <summary>
