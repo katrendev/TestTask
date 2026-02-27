@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Remoting.Channels;
+using System.Text;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
 
         /// <summary>
         /// Конструктор класса. 
@@ -13,12 +15,21 @@ namespace TestTask
         /// обеспечить ГАРАНТИРОВАННОЕ закрытие файла после окончания работы с таковым!
         /// </summary>
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
-        public ReadOnlyStream(string fileFullPath)
+        /// 
+        public ReadOnlyStream(string fileFullPath): this (fileFullPath, Encoding.UTF8) { }
+        public ReadOnlyStream(string fileFullPath, Encoding enc)
         {
-            IsEof = true;
+            if (string.IsNullOrWhiteSpace(fileFullPath))
+            {
+                throw new ArgumentNullException(nameof(fileFullPath),"Ошибка. Пустой путь до файла");
+            }
+            if(!File.Exists(fileFullPath))
+            {
+                throw new FileNotFoundException("Ошибка. Файл не найден",fileFullPath);
+            }
 
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+           _localStream = new StreamReader(fileFullPath, enc);
+           IsEof=_localStream.EndOfStream;
         }
                 
         /// <summary>
@@ -26,8 +37,14 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get; 
             private set;
+        }
+
+        public void Dispose()
+        {
+            _localStream?.Dispose();
+            _localStream= null;
         }
 
         /// <summary>
@@ -38,8 +55,24 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_localStream == null)
+            {
+                throw new ObjectDisposedException(nameof(ReadOnlyStream));
+            }
+            if (IsEof)
+            {
+                throw new EndOfStreamException("Коней файла");
+            }
+
+            int data = _localStream.Read();
+            if (data == -1)
+            {
+                IsEof = true;
+                throw new EndOfStreamException("Коней файла");
+            }
+
+            IsEof = _localStream.EndOfStream;
+            return (char)data;
         }
 
         /// <summary>
@@ -47,14 +80,14 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
+            if(_localStream == null)
             {
-                IsEof = true;
+                IsEof=true;
                 return;
             }
-
-            _localStream.Position = 0;
-            IsEof = false;
+            _localStream.DiscardBufferedData();
+            _localStream.BaseStream.Seek(0,SeekOrigin.Begin);
+            IsEof = _localStream.EndOfStream;
         }
     }
 }
