@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 
 namespace TestTask
 {
     public class ReadOnlyStream : IReadOnlyStream
     {
-        private Stream _localStream;
+        private StreamReader _localStream;
+        private readonly string _filePath;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,10 +17,9 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            _filePath = fileFullPath;
+            // Инициализируем стрим сразу
+            ResetPositionToStart();
         }
                 
         /// <summary>
@@ -26,7 +27,7 @@ namespace TestTask
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +39,16 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (IsEof) throw new EndOfStreamException("Достигнут конец файла");
+
+            int charCode = _localStream.Read();
+            if (charCode == -1)
+            {
+                IsEof = true;
+                return '\0';
+            }
+
+            return (char)charCode;
         }
 
         /// <summary>
@@ -47,14 +56,17 @@ namespace TestTask
         /// </summary>
         public void ResetPositionToStart()
         {
-            if (_localStream == null)
-            {
-                IsEof = true;
-                return;
-            }
-
-            _localStream.Position = 0;
+            _localStream?.Dispose();
+            _localStream = new StreamReader(_filePath);
             IsEof = false;
+        }
+
+        /// <summary>
+        /// Освобождаем память
+        /// </summary>
+        public void Dispose()
+        {
+            _localStream?.Dispose();
         }
     }
 }
