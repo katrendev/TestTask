@@ -6,6 +6,8 @@ namespace TestTask
     public class ReadOnlyStream : IReadOnlyStream
     {
         private Stream _localStream;
+        private StreamReader _localStreamReader;
+        private bool _disposed = false;
 
         /// <summary>
         /// Конструктор класса. 
@@ -15,18 +17,17 @@ namespace TestTask
         /// <param name="fileFullPath">Полный путь до файла для чтения</param>
         public ReadOnlyStream(string fileFullPath)
         {
-            IsEof = true;
-
-            // TODO : Заменить на создание реального стрима для чтения файла!
-            _localStream = null;
+            IsEof = false;
+            _localStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            _localStreamReader = new StreamReader(_localStream);
         }
-                
+
         /// <summary>
         /// Флаг окончания файла.
         /// </summary>
         public bool IsEof
         {
-            get; // TODO : Заполнять данный флаг при достижении конца файла/стрима при чтении
+            get;
             private set;
         }
 
@@ -38,8 +39,11 @@ namespace TestTask
         /// <returns>Считанный символ.</returns>
         public char ReadNextChar()
         {
-            // TODO : Необходимо считать очередной символ из _localStream
-            throw new NotImplementedException();
+            if (_disposed) throw new ObjectDisposedException("Stream is disposed");
+            if (IsEof) throw new EndOfStreamException();
+            char result = (char)_localStreamReader.Read();
+            IsEof = (_localStreamReader.Peek() == -1);
+            return result;
         }
 
         /// <summary>
@@ -56,5 +60,20 @@ namespace TestTask
             _localStream.Position = 0;
             IsEof = false;
         }
+
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _localStream?.Dispose();
+            _localStream = null;
+        }
+
+
+
+
+
+
     }
 }
