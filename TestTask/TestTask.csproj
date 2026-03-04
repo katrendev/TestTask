@@ -11,6 +11,21 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +46,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -42,12 +61,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharType.cs" />
-    <Compile Include="IReadOnlyStream.cs" />
-    <Compile Include="LetterStats.cs" />
+    <Compile Include="LetterAnalysis\CharType.cs" />
+    <Compile Include="Utilities\ConsoleHelperMethods.cs" />
+    <Compile Include="ReadOnlyStream\IReadOnlyStreamFactory.cs" />
+    <Compile Include="LetterAnalysis\LetterAnalysisFacade.cs" />
+    <Compile Include="ReadOnlyStream\BaseReadOnlyStreamFactory.cs" />
+    <Compile Include="LetterAnalysis\ILetterAnalysisStorage.cs" />
+    <Compile Include="ReadOnlyStream\IReadOnlyStream.cs" />
+    <Compile Include="LetterAnalysis\LetterStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadOnlyStream.cs" />
+    <Compile Include="ReadOnlyStream\ReadOnlyStream.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="LetterAnalysis\DictionaryLetterStorage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
